@@ -15,7 +15,7 @@ DatasourceModel = function(theFreeboardModel, datasourcePlugins) {
 	}
 
 	this.name = ko.observable();
-	this.latestData = ko.observable();
+	this.latestData = ko.observable({});
 	this.settings = ko.observable({});
 	this.settings.subscribe(function(newValue)
 	{
@@ -29,10 +29,11 @@ DatasourceModel = function(theFreeboardModel, datasourcePlugins) {
 	{
 		theFreeboardModel.processDatasourceUpdate(self, newData);
 
-		self.latestData(newData);
+		Object.assign(self.latestData(),newData);
 
 		var now = new Date();
-		self.last_updated(now.toLocaleTimeString());
+		var options= { hour: 'numeric',minute: 'numeric',second: 'numeric',fractionalSecondDigits: 3 }
+		self.last_updated(now.toLocaleTimeString(undefined, options));
 	}
 
 	this.type = ko.observable();
@@ -88,7 +89,7 @@ DatasourceModel = function(theFreeboardModel, datasourcePlugins) {
 
 	this.getDataRepresentation = function(dataPath)
 	{
-		var valueFunction = new Function("data", "return " + dataPath + ";");
+		var valueFunction = new Function("data", "try { return " + dataPath + "} catch (e) { return undefined };");
 		return valueFunction.call(undefined, self.latestData());
 	}
 
@@ -279,6 +280,28 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 		}
 	});
 
+	function getDataNamesArray(obj, basekey, result) {
+	
+		if (_.isUndefined(basekey)) basekey="";
+		if (_.isUndefined(result)) result=[];
+		if (typeof obj !== "object")
+		{
+			result.push(basekey);
+			return result;
+		}
+		
+		Object.keys(obj).forEach(key => {
+			var actkey=basekey+"[\""+key+"\"]";
+			if (typeof obj[key] === 'object' && obj[key] !== null) {
+				getDataNamesArray(obj[key], actkey,result);
+				if (basekey.length>0) result.push(actkey);
+			} else {
+				result.push(actkey);
+			}			
+		})
+		return result;
+	};	
+
 	this.header_image = ko.observable();
 	this.plugins = ko.observableArray();
 	this.datasources = ko.observableArray();
@@ -287,14 +310,24 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 	this.processDatasourceUpdate = function(datasourceModel, newData)
 	{
 		var datasourceName = datasourceModel.name();
+		var newDataNames = getDataNamesArray(newData);
 
-		self.datasourceData[datasourceName] = newData;
+		if (typeof newData==='object')
+		{
+			if(_.isUndefined(self.datasourceData[datasourceName])) self.datasourceData[datasourceName]={};
+			Object.assign(self.datasourceData[datasourceName], newData);
+		} 
+		else 
+		{
+			self.datasourceData[datasourceName]=newData;
+		}
+		
 
 		_.each(self.panes(), function(pane)
 		{
 			_.each(pane.widgets(), function(widget)
 			{
-				widget.processDatasourceUpdate(datasourceName);
+				widget.processDatasourceUpdate(datasourceName, newDataNames);
 			});
 		});
 	}
@@ -564,6 +597,7 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 
 	this.addDatasource = function(datasource)
 	{
+		self.datasourceData[datasource.name()]={};
 		self.datasources.push(datasource);
 	}
 
@@ -1719,7 +1753,7 @@ PluginEditor = function(jsEditor, valueEditor)
 			for(var index = 0; index < selectedType.settings.length; index++)
 			{
 				var settingDef = selectedType.settings[index];
-
+				
 				if(settingDef.required && (_.isUndefined(newSettings.settings[settingDef.name]) || newSettings.settings[settingDef.name] == ""))
 				{
 					_displayValidationError(settingDef.name, "This is required.");
@@ -1735,6 +1769,22 @@ PluginEditor = function(jsEditor, valueEditor)
 					_displayValidationError(settingDef.name, "Must be a number.");
 					return true;
 				}
+				
+				// now let the datasource check
+				if (!_.isUndefined(settingDef.validator)) {
+					var invalidmsg;
+					try {
+						invalidmsg=settingDef.validator(newSettings.settings[settingDef.name])
+					}
+					catch (e)
+					{
+						invalidmsg=e;
+					}
+					if (!_.isUndefined(invalidmsg) && invalidmsg.length>0) {
+						_displayValidationError(settingDef.name, invalidmsg);
+						return true;					
+					}
+				}							
 			}
 
 			if(_.isFunction(settingsSavedCallback))
@@ -2210,6 +2260,9 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 					self.widgetInstance = widgetInstance;
 					self.shouldRender(true);
 					self._heightUpdate.valueHasMutated();
+					
+					// Inject send method into widget
+					self.widgetInstance.sendValue = self.sendValue.bind(self);
 
 				});
 			}
@@ -2224,6 +2277,23 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 		}
 	});
 
+	// Allow for widgets to send data back to sources
+	this.sendValue = function(sourceid, value) {
+
+		if (sourceid) {
+			var matches = sourceid.match(/datasources\[["'](\w+)["']\]\[["']([\w+\/]+)["']\]/);
+			if (matches) {
+				_.each(theFreeboardModel.datasources(), function(d) {
+					if (d.name() == matches[1]) {
+						if (d.datasourceInstance.send && _.isFunction(d.datasourceInstance.send)) {
+							d.datasourceInstance.send(matches[2],value);
+						}
+					}
+				})
+			}
+		}
+	},
+
 	this.settings = ko.observable({});
 	this.settings.subscribe(function (newValue) {
 		if (!_.isUndefined(self.widgetInstance) && _.isFunction(self.widgetInstance.onSettingsChanged)) {
@@ -2234,12 +2304,22 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 		self._heightUpdate.valueHasMutated();
 	});
 
-	this.processDatasourceUpdate = function (datasourceName) {
+	this.processDatasourceUpdate = function (datasourceName, newDataNames) {
 		var refreshSettingNames = self.datasourceRefreshNotifications[datasourceName];
 
 		if (_.isArray(refreshSettingNames)) {
-			_.each(refreshSettingNames, function (settingName) {
-				self.processCalculatedSetting(settingName);
+			var updates=[];
+			_.each(refreshSettingNames, function (setting) {
+				_.each(setting.value, function (valuename) {
+				if (newDataNames.includes(valuename)) {
+					if (updates.findIndex(updates => updates === setting.name)===-1) {
+						updates.push(setting.name);
+					}
+			   	}
+			    });
+			});
+			_.each(updates, function (name) {
+				self.processCalculatedSetting(name);
 			});
 		}
 	}
@@ -2291,7 +2371,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 
 		// Check for any calculated settings
 		var settingsDefs = widgetPlugins[self.type()].settings;
-		var datasourceRegex = new RegExp("datasources.([\\w_-]+)|datasources\\[['\"]([^'\"]+)", "g");
+		var datasourceRegex = new RegExp('datasources\\[\\"(\\w+)\\"\\](\\[\\"[\\"\\]\\[\\w\\.\\/]+\\"])?', 'g');
 		var currentSettings = self.settings();
 
 		_.each(settingsDefs, function (settingDef) {
@@ -2328,18 +2408,21 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 					var matches;
 
 					while (matches = datasourceRegex.exec(script)) {
-						var dsName = (matches[1] || matches[2]);
+						var dsName = matches[1];
 						var refreshSettingNames = self.datasourceRefreshNotifications[dsName];
 
 						if (_.isUndefined(refreshSettingNames)) {
-							refreshSettingNames = [];
+							refreshSettingNames = [ { name: settingDef.name, value: [] } ];
 							self.datasourceRefreshNotifications[dsName] = refreshSettingNames;
 						}
-
-						if(_.indexOf(refreshSettingNames, settingDef.name) == -1) // Only subscribe to this notification once.
-						{
-							refreshSettingNames.push(settingDef.name);
+						var entry=refreshSettingNames.find(object => object.name === settingDef.name);
+						if (_.isUndefined(entry)) { 
+							entry={ name: settingDef.name, value: [] }; 
+							refreshSettingNames.push(entry);
 						}
+
+						if (_.isUndefined(matches[2])) matches[2]="";
+						entry.value.push(matches[2]);
 					}
 				}
 			}
@@ -2369,7 +2452,9 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 	}
 
 	this.dispose = function () {
-
+		if (!_.isUndefined(self.widgetInstance) && _.isFunction(self.widgetInstance.onDispose)) {
+		     self.widgetInstance.onDispose();
+		}
 	}
 
 	this.serialize = function () {
