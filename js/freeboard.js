@@ -1256,7 +1256,6 @@ function PaneModel(theFreeboardModel, widgetPlugins) {
 
 	this.processSizeChange = function()
 	{
-console.log("processSizeChange");
 		// Give the animation a moment to complete. Really hacky.
 		// TODO: Make less hacky. Also, doesn't work when screen resizes.
 		setTimeout(function(){
@@ -1659,6 +1658,10 @@ PluginEditor = function(jsEditor, valueEditor)
 								if(settingDef.type == "number")
 								{
 									newSettings.settings[settingDef.name] = Number($(this).val());
+								}
+								else if (settingDef.type == "integer")
+								{
+									newSettings.settings[settingDef.name] = parseInt($(this).val());
 								}
 								else
 								{
