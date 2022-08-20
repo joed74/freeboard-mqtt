@@ -667,11 +667,13 @@
         {
             if(widgetElement && imageURL)
             {
-                var cacheBreakerURL = imageURL + (imageURL.indexOf("?") == -1 ? "?" : "&") + Date.now();
-
-                $(widgetElement).css({
-                    "background-image" :  "url(" + cacheBreakerURL + ")"
-                });
+             	var cacheBreakerURL = imageURL + (imageURL.indexOf("?") == -1 ? "?" : "&") + Date.now(), img = new Image();
+		img.onload = function() {
+			$(widgetElement).css({
+				"background-image" :  "url(" + cacheBreakerURL + ")"
+			});
+		}
+		img.src = cacheBreakerURL;
             }
         }
 
