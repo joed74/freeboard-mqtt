@@ -4338,7 +4338,7 @@ freeboard.loadDatasourcePlugin({
 
         this.render = function (element) {
             width = $(element).width();
-            height = $(element).height();
+	    height = this.getHeight()*60;
 
             var radius = Math.min(width, height) / 2 - strokeWidth * 2;
 
@@ -4359,7 +4359,7 @@ freeboard.loadDatasourcePlugin({
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
-            if (settingName == "direction") {
+	    if (settingName == "direction") {
                 if (!_.isUndefined(triangle)) {
                     var direction = "r";
 
@@ -4375,7 +4375,7 @@ freeboard.loadDatasourcePlugin({
                 currentValue = newValue;
             }
             else if (settingName == "value_text") {
-                valueDiv.html(newValue);
+                valueDiv.html(newValue.toFixed(0));
             }
         }
 
