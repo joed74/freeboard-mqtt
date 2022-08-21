@@ -1883,10 +1883,10 @@ a:hover.text-button, a:focus.text-button {
 textarea.calculated-value-input {
 	position: absolute;
 	width: 400px;
-	height: 20px;
+	height: 30px;
 	resize: none;
-	white-space: nowrap;
-	overflow: auto;
+	white-space: pre;
+	overflow: scroll;
 	Z-index: 3000;
 }
 
