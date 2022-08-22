@@ -16426,7 +16426,15 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 	fn.remove_widget = function(el, silent, callback)
 	{
 		var $el = el instanceof jQuery ? el : $(el);
+		if ($el.length === 0) {
+			//there is nothing to remove, so we can't remove it
+			return this;
+		}
 		var wgd = $el.coords().grid;
+		if (wgd === undefined) {
+			//there is no grid, so we can't remove it
+			return this;
+		}
 
 		// if silent is a function assume it's a callback
 		if($.isFunction(silent))
@@ -17979,11 +17987,15 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 	 */
 	fn.widgets_below = function($el)
 	{
+		var $nexts = $([]);
 		var el_grid_data = $.isPlainObject($el) ? $el : $el.coords().grid;
+		if (el_grid_data === undefined) {
+			//there is no grid, so we can't calculate the widgets below
+			return $nexts;
+		}
 		var self = this;
 		var ga = this.gridmap;
 		var next_row = el_grid_data.row + el_grid_data.size_y - 1;
-		var $nexts = $([]);
 
 		this.for_each_column_occupied(el_grid_data, function(col)
 		{
@@ -18477,7 +18489,7 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 		{
 			styles += (opts.namespace + ' [data-sizex="' + x + '"] { width:' + (x * opts.widget_base_dimensions[0] + (x - 1) * (opts.widget_margins[0] * 2)) + 'px;}');
 		}
-
+		this.remove_style_tags();
 		return this.add_style_tag(styles);
 	};
 
