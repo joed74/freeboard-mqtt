@@ -1151,7 +1151,7 @@ JSEditor = function () {
 		assetRoot = _assetRoot;
 	}
 
-	function displayJSEditor(value, callback) {
+	function displayJSEditor(value, callback, noDataSource) {
 
 		var exampleText = "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);";
 
@@ -1344,7 +1344,7 @@ PluginEditor = function(jsEditor, valueEditor)
 		return !isNaN(parseFloat(n)) && isFinite(n);
 	}
 
-	function _appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue, includeRemove)
+	function _appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue, includeRemove, noDataSource)
 	{
 		var input = $('<textarea></textarea>');
 
@@ -1370,17 +1370,19 @@ PluginEditor = function(jsEditor, valueEditor)
 		}
 
 		valueEditor.createValueEditor(input);
-
+		
 		var datasourceToolbox = $('<ul class="board-toolbar datasource-input-suffix"></ul>');
 		var wrapperDiv = $('<div class="calculated-setting-row"></div>');
 		wrapperDiv.append(input).append(datasourceToolbox);
 
-		var datasourceTool = $('<li><i class="icon-plus icon-white"></i><label>DATASOURCE</label></li>')
-			.mousedown(function(e) {
-				e.preventDefault();
-				$(input).val("").focus().insertAtCaret("datasources[\"").trigger("freeboard-eval");
-			});
-		datasourceToolbox.append(datasourceTool);
+		if (!noDataSource) {
+			var datasourceTool = $('<li><i class="icon-plus icon-white"></i><label>DATASOURCE</label></li>')
+				.mousedown(function(e) {
+					e.preventDefault();
+					$(input).val("").focus().insertAtCaret("datasources[\"").trigger("freeboard-eval");
+				});
+			datasourceToolbox.append(datasourceTool);
+		}
 
 		var jsEditorTool = $('<li><i class="icon-fullscreen icon-white"></i><label>.JS EDITOR</label></li>')
 			.mousedown(function(e) {
@@ -1388,7 +1390,7 @@ PluginEditor = function(jsEditor, valueEditor)
 				jsEditor.displayJSEditor(input.val(), function(result) {
 					input.val(result);
 					input.change();
-				});
+				},noDataSource);
 			});
 		datasourceToolbox.append(jsEditorTool);
 
@@ -1625,28 +1627,30 @@ PluginEditor = function(jsEditor, valueEditor)
 					{
 						newSettings.settings[settingDef.name] = currentSettingsValues[settingDef.name];
 
-						if(settingDef.type == "calculated")
+						if(settingDef.type == "calculated" || settingDef.type=="script")						
 						{
+							var nodatasource=settingDef.type==="script";
+						
 							if(settingDef.name in currentSettingsValues) {
 								var currentValue = currentSettingsValues[settingDef.name];
 								if(settingDef.multi_input && _.isArray(currentValue)) {
 									var includeRemove = false;
 									for(var i=0; i<currentValue.length; i++) {
-										_appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue[i], includeRemove);
+										_appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue[i], includeRemove, nodatasource);
 										includeRemove = true;
 									}
 								} else {
-									_appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue, false);
+									_appendCalculatedSettingRow(valueCell, newSettings, settingDef, currentValue, false, nodatasource);
 								}
 							} else {
-								_appendCalculatedSettingRow(valueCell, newSettings, settingDef, null, false);
+								_appendCalculatedSettingRow(valueCell, newSettings, settingDef, null, false, nodatasource);
 							}
 
 							if(settingDef.multi_input) {
 								var inputAdder = $('<ul class="board-toolbar"><li class="add-setting-row"><i class="icon-plus icon-white"></i><label>ADD</label></li></ul>')
 									.mousedown(function(e) {
 										e.preventDefault();
-										_appendCalculatedSettingRow(valueCell, newSettings, settingDef, null, true);
+										_appendCalculatedSettingRow(valueCell, newSettings, settingDef, null, true, nodatasource);
 									});
 								$(valueCell).siblings('.form-label').append(inputAdder);
 							}
@@ -2375,7 +2379,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 
 		// Check for any calculated settings
 		var settingsDefs = widgetPlugins[self.type()].settings;
-		var datasourceRegex = new RegExp('datasources\\[\\"(\\w+)\\"\\](\\[\\"[\\"\\]\\[\\w\\.\\/]+\\"])?', 'g');
+		var datasourceRegex = new RegExp('datasources\\[\\"([^\\"]+)\\"\\](\\[\\".*\\"\\])', 'g');
 		var currentSettings = self.settings();
 
 		_.each(settingsDefs, function (settingDef) {
@@ -4375,7 +4379,11 @@ freeboard.loadDatasourcePlugin({
                 currentValue = newValue;
             }
             else if (settingName == "value_text") {
-                valueDiv.html(newValue.toFixed(0));
+				if (isFinite(newValue)) {
+					valueDiv.html(newValue.toFixed(0));
+				} else {
+					valueDiv.html(newValue);
+				}
             }
         }
 

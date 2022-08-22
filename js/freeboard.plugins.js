@@ -1258,7 +1258,11 @@ freeboard.loadDatasourcePlugin({
                 currentValue = newValue;
             }
             else if (settingName == "value_text") {
-                valueDiv.html(newValue.toFixed(0));
+				if (isFinite(newValue)) {
+					valueDiv.html(newValue.toFixed(0));
+				} else {
+					valueDiv.html(newValue);
+				}
             }
         }
 
