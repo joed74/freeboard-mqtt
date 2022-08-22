@@ -75,7 +75,8 @@
 			options = {
 				timeout: 3,
 				onSuccess: onConnect,
-				onFailure: onFailure
+				onFailure: onFailure,
+				cleanSession: true
 			}
 		
 			var clientid = currentSettings.client_id+'_'+Math.floor(Math.random()*100000)+1;

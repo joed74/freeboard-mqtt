@@ -515,6 +515,7 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 	this.loadDashboard = function(dashboardData, callback)
 	{
 		freeboardUI.showLoadingIndicator(true);
+		self.clearDashboard();
 		self.deserialize(dashboardData, function()
 		{
 			freeboardUI.showLoadingIndicator(false);
