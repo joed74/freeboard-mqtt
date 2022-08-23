@@ -515,7 +515,6 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 	this.loadDashboard = function(dashboardData, callback)
 	{
 		freeboardUI.showLoadingIndicator(true);
-		self.clearDashboard();
 		self.deserialize(dashboardData, function()
 		{
 			freeboardUI.showLoadingIndicator(false);
@@ -913,10 +912,9 @@ function FreeboardUI(pane_margin, pane_width, min_columns)
 		var position = getPositionForScreenSize(viewModel);
 		var col = position.col;
 		var row = position.row;
-		var width = Number(viewModel.width());
 		var height = Number(viewModel.getCalculatedHeight());
 
-		grid.add_widget(element, width, height, col, row);
+		grid.add_widget(element, 1, height, col, row);
 
 		if(isEditing)
 		{
@@ -1213,7 +1211,6 @@ function PaneModel(theFreeboardModel, widgetPlugins) {
 	var self = this;
 
 	this.title = ko.observable();
-	this.width = ko.observable(1);
 	this.row = {};
 	this.col = {};
 
@@ -1290,7 +1287,6 @@ function PaneModel(theFreeboardModel, widgetPlugins) {
 
 		return {
 			title: self.title(),
-			width: self.width(),
 			row: self.row,
 			col: self.col,
 			col_width: Number(self.col_width()),
@@ -1300,7 +1296,6 @@ function PaneModel(theFreeboardModel, widgetPlugins) {
 
 	this.deserialize = function (object) {
 		self.title(object.title);
-		self.width(object.width);
 
 		self.row = object.row;
 		self.col = object.col;
