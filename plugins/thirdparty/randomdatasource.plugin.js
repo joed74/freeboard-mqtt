@@ -22,7 +22,7 @@
 		this.updateNow = function () {
 
 			var num=Math.random() * (currentSettings.max - currentSettings.min) + parseFloat(currentSettings.min);
-			data=Math.round((num * 100) / 100).toFixed(currentSettings.decimalPlaces);
+			data=num.toFixed(currentSettings.decimalPlaces);
 			updateCallback(data);
 		}
 		

@@ -784,6 +784,7 @@ freeboard.loadDatasourcePlugin({
 	var valueStyle = freeboard.getStyleString("values");
 
 	freeboard.addStyle('.widget-big-text', valueStyle + "font-size:75px;");
+	freeboard.addStyle('.widget-middle-text', valueStyle + "font-size:45px;");
 
 	freeboard.addStyle('.tw-display', 'width: 100%; height:100%; display:table; table-layout:fixed;');
 
@@ -1196,16 +1197,29 @@ freeboard.loadDatasourcePlugin({
         }
     });
 
-	freeboard.addStyle('div.pointer-value', "position:absolute;height:95px;margin: auto;top: 0px;bottom: 0px;width: 100%;text-align:center;");
+	freeboard.addStyle('div.pointer-value', "position:absolute;height:95px;margin: auto;top: 0px;bottom: 0px;width: 94%;text-align:center;");
     var pointerWidget = function (settings) {
         var self = this;
+		var currentsettings = settings;
         var paper;
         var strokeWidth = 3;
-        var triangle;
+        var pointer;
         var width, height;
         var currentValue = 0;
-        var valueDiv = $('<div class="widget-big-text"></div>');
+        var valueDiv = $('<div class="widget-middle-text"></div>');
         var unitsDiv = $('<div></div>');
+
+		function countDecimals(value) {
+		    if (Math.floor(value) === value) return 0;
+
+			var str = value.toString();
+			if (str.indexOf(".") !== -1 && str.indexOf("-") !== -1) {
+				return str.split("-")[1] || 0;
+			} else if (str.indexOf(".") !== -1) {
+				return str.split(".")[1].length || 0;
+			}
+			return str.split("-")[1] || 0;
+		}
 
         function polygonPath(points) {
             if (!points || points.length < 2)
@@ -1219,47 +1233,105 @@ freeboard.loadDatasourcePlugin({
             return path;
         }
 
+		function fillPaper(paper) {
+			if (paper===undefined) return;
+
+			paper.clear();
+
+			var radius;
+			if (currentsettings.labels) {
+				radius =Math.min(width, height) / 2;
+				var marginx = width/4;
+				var marginy = height/4;
+
+				var rect = paper.rect(marginx,marginy,width-(2*marginx),height-(2*marginy),0);
+				rect.attr("stroke", "#FF9900");
+				rect.attr("stroke-width", strokeWidth);
+				pointer = paper.circle(width / 5, height / 5,10);
+
+				if (currentsettings.labels[0]) {
+					var txtTop=paper.text(0,0,currentsettings.labels[0].text).attr({'text-anchor': 'start'});
+					var rtxtTop=txtTop.node.getBBox();
+					txtTop.attr("x",marginx+(rect.attr("width")/2)-(rtxtTop.width/2));
+					txtTop.attr("y",marginy-rtxtTop.height);
+					txtTop.attr("fill", "#FF9900");
+				}
+
+				if (currentsettings.labels[1]) {
+					var txtBottom=paper.text(0,0,currentsettings.labels[1].text).attr({'text-anchor': 'start'});
+					var rtxtBottom=txtBottom.node.getBBox();
+					txtBottom.attr("x",marginx+(rect.attr("width")/2)-(rtxtBottom.width/2));
+					txtBottom.attr("y",marginy+rect.attr("height")+rtxtBottom.height);
+					txtBottom.attr("fill", "#FF9900");
+				}
+
+				if (currentsettings.labels[2]) {
+					var txtLeft=paper.text(0,0,currentsettings.labels[2].text).attr({'text-anchor': 'start'});
+					var rtxtLeft=txtLeft.node.getBBox();
+					txtLeft.attr("x",rect.attr("x")-rtxtLeft.height);
+					txtLeft.attr("y",marginy+rect.attr("height")- (rect.attr("height")/2 -rtxtLeft.width/2))
+					txtLeft.transform('r-90,'+txtLeft.attr("x")+','+txtLeft.attr("y"));
+					txtLeft.attr("fill", "#FF9900");
+				}
+
+				if (currentsettings.labels[3]) {
+					var txtRight=paper.text(0,0,currentsettings.labels[3].text).attr({'text-anchor': 'start'});
+					var	rtxtRight=txtRight.node.getBBox();
+					txtRight.attr("x",rect.attr("x")+rect.attr("width")+rtxtRight.height);
+					txtRight.attr("y",marginy+rect.attr("height")- (rect.attr("height")/2 -rtxtRight.width/2))
+					txtRight.transform('r-90,'+txtRight.attr("x")+','+txtRight.attr("y"));
+					txtRight.attr("fill", "#FF9900");
+				}
+			} else {
+				radius = Math.min(width, height) / 2 - strokeWidth * 2;
+				var circle = paper.circle(width / 2, height / 2, radius);
+				circle.attr("stroke", "#FF9900");
+				circle.attr("stroke-width", strokeWidth);
+				pointer = paper.path(polygonPath([width / 2, (height / 2) - radius + strokeWidth, 15, 20, -30, 0]));
+			}
+	                pointer.attr("stroke-width", 0);
+        	        pointer.attr("fill", "#fff");
+			unitsDiv.html(currentsettings.units);
+		}
+
         this.render = function (element) {
             width = $(element).width();
-	    height = this.getHeight()*60;
+			height = (this.getHeight()*60)-5;
 
-            var radius = Math.min(width, height) / 2 - strokeWidth * 2;
-
-            paper = Raphael($(element).get()[0], width, height);
-            var circle = paper.circle(width / 2, height / 2, radius);
-            circle.attr("stroke", "#FF9900");
-            circle.attr("stroke-width", strokeWidth);
-
-            triangle = paper.path(polygonPath([width / 2, (height / 2) - radius + strokeWidth, 15, 20, -30, 0]));
-            triangle.attr("stroke-width", 0);
-            triangle.attr("fill", "#fff");
+			paper = Raphael($(element).get()[0], width, height);
+			fillPaper(paper);
 
             $(element).append($('<div class="pointer-value"></div>').append(valueDiv).append(unitsDiv));
         }
 
         this.onSettingsChanged = function (newSettings) {
-            unitsDiv.html(newSettings.units);
+			currentsettings = newSettings
+			fillPaper(paper);
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
-	    if (settingName == "direction") {
-                if (!_.isUndefined(triangle)) {
+			if (settingName == "direction") {
+                if (!_.isUndefined(pointer) && isFinite(newValue)) {
                     var direction = "r";
-
                     var oppositeCurrent = currentValue + 180;
+		    newValue=Number(newValue);
 
                     if (oppositeCurrent < newValue) {
-                        //direction = "l";
+                        direction = "l";
                     }
 
-                    triangle.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
+		    if (currentsettings.labels) newValue+=50;
+                    pointer.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
                 }
 
-                currentValue = newValue;
+                currentValue = Number(newValue);
             }
             else if (settingName == "value_text") {
 				if (isFinite(newValue)) {
-					valueDiv.html(newValue.toFixed(0));
+					let f=parseFloat(newValue);
+					let d=countDecimals(newValue);
+					if (d>1) d=1;
+					valueDiv.html(f.toFixed(d));
 				} else {
 					valueDiv.html(newValue);
 				}
@@ -1273,7 +1345,7 @@ freeboard.loadDatasourcePlugin({
             return 4;
         }
 
-        this.onSettingsChanged(settings);
+        //this.onSettingsChanged(settings);
     };
 
     freeboard.loadWidgetPlugin({
@@ -1298,7 +1370,20 @@ freeboard.loadDatasourcePlugin({
                 name: "units",
                 display_name: "Units",
                 type: "text"
-            }
+            },
+			{
+				name: "labels",
+				display_name: "If defined, pointer will change to a circle around a rectangle.\n\nEnter labels for rectangle (top, bottom, left, right)",
+				type: "array",
+				settings: [
+					{
+						name: "text",
+						display_name: "Labels",
+						type: "text"
+					}
+				]
+			}
+
         ],
         newInstance: function (settings, newInstanceCallback) {
             newInstanceCallback(new pointerWidget(settings));

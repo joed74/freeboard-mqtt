@@ -2046,6 +2046,11 @@ input.table-row-value {
 	margin: 0px;
 }
 
+input.table-row-value-long {
+	width: 350px;
+	margin: 0px;
+}
+
 .sub-table {
 	margin-bottom: 3px;
 }

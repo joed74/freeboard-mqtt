@@ -29,7 +29,14 @@ DatasourceModel = function(theFreeboardModel, datasourcePlugins) {
 	{
 		theFreeboardModel.processDatasourceUpdate(self, newData);
 
-		Object.assign(self.latestData(),newData);
+		if (typeof newData==='object')
+		{
+			Object.assign(self.latestData(),newData);
+		}
+		else
+		{
+			self.latestData(newData);
+		}
 
 		var now = new Date();
 		var options= { hour: 'numeric',minute: 'numeric',second: 'numeric',fractionalSecondDigits: 3 }
@@ -1499,6 +1506,9 @@ PluginEditor = function(jsEditor, valueEditor)
 
 							newSettings.settings[settingDef.name].push(newSetting);
 
+							var lt="table-row-value-long";
+							if (settingDef.settings.length>1) lt="table-row-value";
+
 							_.each(settingDef.settings, function(subSettingDef)
 							{
 								var subsettingCol = $('<td></td>').appendTo(subsettingRow);
@@ -1511,7 +1521,7 @@ PluginEditor = function(jsEditor, valueEditor)
 
 								newSetting[subSettingDef.name] = subsettingValueString;
 
-								$('<input class="table-row-value" type="text">').appendTo(subsettingCol).val(subsettingValueString).change(function()
+								$('<input class="'+lt+'" type="text">').appendTo(subsettingCol).val(subsettingValueString).change(function()
 								{
 									newSetting[subSettingDef.name] = $(this).val();
 								});
@@ -1526,6 +1536,7 @@ PluginEditor = function(jsEditor, valueEditor)
 									newSettings.settings[settingDef.name].splice(subSettingIndex, 1);
 									subsettingRow.remove();
 									processHeaderVisibility();
+									if (newSettings.settings[settingDef.name].length==0) newSettings.settings[settingDef.name]=undefined;
 								}
 							})))));
 
@@ -2375,7 +2386,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 
 		// Check for any calculated settings
 		var settingsDefs = widgetPlugins[self.type()].settings;
-		var datasourceRegex = new RegExp('datasources\\[\\"([^\\"]+)\\"\\](\\[\\".*\\"\\])', 'g');
+		var datasourceRegex = new RegExp('datasources\\[\\"([^\\"]+)\\"\\](\\[\\".*\\"\\])*', 'g');
 		var currentSettings = self.settings();
 
 		_.each(settingsDefs, function (settingDef) {
