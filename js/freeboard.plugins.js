@@ -1197,7 +1197,7 @@ freeboard.loadDatasourcePlugin({
         }
     });
 
-	freeboard.addStyle('div.pointer-value', "position:absolute;height:95px;margin: auto;top: 0px;bottom: 0px;width: 94%;text-align:center;");
+	freeboard.addStyle('div.pointer-value', "position:absolute;height:50px;margin: auto;top: 0px;bottom: 0px;width: 94%;text-align:center;");
     var pointerWidget = function (settings) {
         var self = this;
 		var currentsettings = settings;
@@ -1282,6 +1282,8 @@ freeboard.loadDatasourcePlugin({
 					txtRight.transform('r-90,'+txtRight.attr("x")+','+txtRight.attr("y"));
 					txtRight.attr("fill", "#FF9900");
 				}
+				pointer.attr("stroke-width",0);
+				pointer.hide();
 			} else {
 				radius = Math.min(width, height) / 2 - strokeWidth * 2;
 				var circle = paper.circle(width / 2, height / 2, radius);
@@ -1289,7 +1291,6 @@ freeboard.loadDatasourcePlugin({
 				circle.attr("stroke-width", strokeWidth);
 				pointer = paper.path(polygonPath([width / 2, (height / 2) - radius + strokeWidth, 15, 20, -30, 0]));
 			}
-	                pointer.attr("stroke-width", 0);
         	        pointer.attr("fill", "#fff");
 			unitsDiv.html(currentsettings.units);
 		}
@@ -1320,8 +1321,11 @@ freeboard.loadDatasourcePlugin({
                         direction = "l";
                     }
 
-		    if (currentsettings.labels) newValue+=50;
-                    pointer.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
+		    if (currentsettings.labels) {
+			    pointer.show();
+			    newValue+=50;
+		    }
+		    pointer.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
                 }
 
                 currentValue = Number(newValue);
