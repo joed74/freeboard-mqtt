@@ -65,6 +65,13 @@
 		"default_value": false
 		},
 		{
+		"name": "updateinterval",
+		"display_name": "Use update interval",
+		"type": "boolean",
+		"default_value": false,
+		"description": "If yes, chart acts like a plotter and updates every second"
+		},
+		{
 		"name": "xaxis",
 		"display_name": "X-Axis",
 		"type": "calculated",
@@ -114,9 +121,39 @@
 
 		var self = this;
 		var currentSettings = settings;
+		var refreshTimer;
+		var newData={};
 
 		var thisWidgetId = "highcharts-widget-timeseries-" + HIGHCHARTS_ID++;
 		var thisWidgetContainer = $('<div class="highcharts-widget" id="' + thisWidgetId + '"></div>');
+
+		function createRefreshTimer(interval)
+		{
+			if(refreshTimer)
+			{
+				clearInterval(refreshTimer);
+			}
+
+			refreshTimer = setInterval(function()
+			{
+				var chart = thisWidgetContainer.highcharts();
+				_.each(chart.series, function(series)
+				{
+				    var newValue=newData[series.userOptions.id];
+				    var y;
+                                    if (typeof newValue === "object") {
+                                        Object.keys(newValue).forEach(key => {
+                                                if (isNumber(newValue[key])) y=Number(newValue[key]);
+                                        });
+                                    } else {
+                                        if (isNumber(newValue)) { //check if it is a real number and not text
+                                                y = Number(newValue);
+                                        };
+                                    }
+			            self.onCalculatedValueChanged(series.userOptions.id,{ time: new Date(), value: y }, true);
+				});
+			}, interval);
+		}
 
 		function createWidget() {
 
@@ -404,6 +441,7 @@
 				},
 				series: thisWidgetSeries
 			});
+			if (currentSettings.updateinterval) createRefreshTimer(1000);
 		}
 
 		self.render = function(containerElement) {
@@ -420,8 +458,13 @@
 			createWidget();
 		}
 
-		self.onCalculatedValueChanged = function(settingName, newValue) {
+		self.onCalculatedValueChanged = function(settingName, newValue, fromTimer) {
 			// console.log(settingName, 'newValue:', newValue);
+
+			if (refreshTimer && fromTimer===undefined)  {
+				newData[settingName]=newValue;
+				return;
+			}
 
 			var chart = thisWidgetContainer.highcharts();
 			var series = chart.get(settingName);
@@ -469,6 +512,8 @@
 		}
 
 		self.onDispose = function() {
+			if (refreshTimer) clearInterval(refreshTimer);
+			refreshTimer=undefined;
 			return;
 		}
 	}
