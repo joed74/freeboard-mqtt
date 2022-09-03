@@ -273,10 +273,18 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 	var SERIALIZATION_VERSION = 1;
 
 	this.version = 0;
+	this.isEditable=true;
+
 	this.isEditing = ko.observable(false);
 	this.allow_edit = ko.observable(false);
 	this.allow_edit.subscribe(function(newValue)
 	{
+		if (self.isEditable===false)
+		{
+			$("#main-header").hide();
+			return;
+		}
+
 		if(newValue)
 		{
 			$("#main-header").show();
@@ -666,6 +674,11 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 	{
 		// Don't allow editing if it's not allowed
 		if(!self.allow_edit() && editing)
+		{
+			return;
+		}
+
+		if (self.isEditable===false && editing)
 		{
 			return;
 		}
@@ -2944,7 +2957,9 @@ var freeboard = (function()
 		initialize          : function(allowEdit, finishedCallback)
 		{
 			ko.applyBindings(theFreeboardModel);
-
+			theFreeboardModel.allow_edit(allowEdit);
+			theFreeboardModel.setEditing(allowEdit,allowEdit);
+			theFreeboardModel.isEditable=allowEdit;
 			// Check to see if we have a query param called load. If so, we should load that dashboard initially
 			var freeboardLocation = getParameterByName("load");
 
@@ -2965,9 +2980,6 @@ var freeboard = (function()
 			}
 			else
 			{
-				theFreeboardModel.allow_edit(allowEdit);
-				theFreeboardModel.setEditing(allowEdit);
-
 				freeboardUI.showLoadingIndicator(false);
 				if(_.isFunction(finishedCallback))
 				{
