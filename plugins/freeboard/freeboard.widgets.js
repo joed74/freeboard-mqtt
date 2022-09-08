@@ -266,11 +266,19 @@
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (settingName == "value") {
 
+		if (isFinite(newValue))
+		{
+		    if (currentSettings.decimalplaces!==undefined)
+		    {
+			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
+		    }
+		}
+
                 if (currentSettings.animate) {
                     easeTransitionText(newValue, valueElement, 500);
                 }
                 else {
-                    valueElement.text(newValue);
+	    	    valueElement.text(newValue);
                 }
 
                 if (currentSettings.sparkline) {
@@ -327,7 +335,13 @@
                 display_name: "Value",
                 type: "calculated"
             },
-            {
+	    {
+	        name: "decimalplaces",
+		display_name: "Decimal Places",
+		type: "number",
+		description: "if value is numeric, format it with this parameter"
+	    },
+	    {
                 name: "sparkline",
                 display_name: "Include Sparkline",
                 type: "boolean"
