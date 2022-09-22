@@ -462,8 +462,8 @@
 		}
 
 		self.onSizeChanged = function() {
-			thisWidgetContainer.highcharts().reflow();
 			$(mycontainerElement).append(thisWidgetContainer);
+			thisWidgetContainer.highcharts().reflow();
 		}
 
 		self.onCalculatedValueChanged = function(settingName, newValue, fromTimer) {
