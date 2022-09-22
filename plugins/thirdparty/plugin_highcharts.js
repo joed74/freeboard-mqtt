@@ -123,6 +123,7 @@
 		var currentSettings = settings;
 		var refreshTimer;
 		var newData={};
+		var mycontainerElement;
 
 		var thisWidgetId = "highcharts-widget-timeseries-" + HIGHCHARTS_ID++;
 		var thisWidgetContainer = $('<div class="highcharts-widget" id="' + thisWidgetId + '"></div>');
@@ -389,14 +390,13 @@
 						data: [],
 						connectNulls: true
 					};
-					
+
 					thisWidgetSeries.push(newSeries);
 				}
 			}
 
 			// Create widget
-			thisWidgetContainer
-				.css('height', 60 * self.getHeight() - 10 + 'px');
+			thisWidgetContainer.css('height', 60 * self.getHeight() - 10 + 'px');
 			thisWidgetContainer.css('width', '100%');
 
 			thisWidgetContainer.highcharts({
@@ -441,12 +441,15 @@
 				},
 				series: thisWidgetSeries
 			});
+
+			if (refreshTimer) clearInterval(refreshTimer);
+			refreshTimer=undefined;
 			if (currentSettings.updateinterval) createRefreshTimer(1000);
 		}
 
 		self.render = function(containerElement) {
-			$(containerElement).append(thisWidgetContainer);
 			createWidget();
+			mycontainerElement=containerElement;
 		}
 
 		self.getHeight = function() {
@@ -456,6 +459,11 @@
 		self.onSettingsChanged = function(newSettings) {
 			currentSettings = newSettings;
 			createWidget();
+		}
+
+		self.onSizeChanged = function() {
+			thisWidgetContainer.highcharts().reflow();
+			$(mycontainerElement).append(thisWidgetContainer);
 		}
 
 		self.onCalculatedValueChanged = function(settingName, newValue, fromTimer) {
@@ -469,28 +477,6 @@
 			var chart = thisWidgetContainer.highcharts();
 			var series = chart.get(settingName);
 			if (series) {
-				var timeframeMS = currentSettings.timeframe * ONE_SECOND_IN_MILIS;
-				var seriesno = settingName;
-				var len = series.data.length;
-				var shift = false;
-
-				// Check if it should shift the series
-				if (series.data.length > 1) {
-
-					var first = series.data[0].x;
-					//var last = series.data[series.data.length-1].x;
-					var last = new Date().getTime();
-					// Check if time frame is complete
-					var diff = last - first;
-					//                                         console.log('last :', last);
-					//                                         console.log('first:', first);
-					//                                         console.log('diff :', diff);
-
-					if (last - first > timeframeMS) {
-						shift = true;
-					}
-				}
-
 				var x,y;
 				if (typeof newValue === "object") {
 					Object.keys(newValue).forEach(key => {
@@ -504,9 +490,23 @@
 					};
 				}
 				if (!_.isUndefined(x) && !_.isUndefined(y)) {
-					// console.log('addPoint:', x, currentSettings[seriesno], y);
-					var plotMqtt = [x, y];
-					series.addPoint(plotMqtt, true, shift);
+					var shift = false;
+					var add = true;
+					if (series.data.length>0) 
+					{
+						var timeframeMS = currentSettings.timeframe * ONE_SECOND_IN_MILIS;
+						var first = series.data[0].x;
+						var last = series.data[series.data.length-1].x;
+						if (x-last<ONE_SECOND_IN_MILIS) add=false;
+						if (x-first>timeframeMS) shift=true;
+					}
+
+					if (add)
+					{
+						// console.log('addPoint:', x, currentSettings[settingName], y);
+						var plotMqtt = [x, y];
+						series.addPoint(plotMqtt, true, shift);
+					}
 				}
 			}
 		}
