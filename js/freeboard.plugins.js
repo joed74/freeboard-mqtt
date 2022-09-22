@@ -922,20 +922,23 @@ freeboard.loadDatasourcePlugin({
 
 		if (isFinite(newValue))
 		{
-		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!="")
+		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!=="")
 		    {
 			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
 		    }
 		}
 
-                if (currentSettings.animate) {
+                if (currentSettings.animate) 
+		{
                     easeTransitionText(newValue, valueElement, 500);
                 }
-                else {
+                else 
+		{
 	    	    valueElement.text(newValue);
                 }
 
-                if (currentSettings.sparkline) {
+                if (currentSettings.sparkline) 
+		{
                     addValueToSparkline(sparklineElement, newValue);
                 }
             }
