@@ -25,13 +25,13 @@
 			data=num.toFixed(currentSettings.decimalPlaces);
 			updateCallback(data);
 		}
-		
-		this.send = function(newValue)
-		{
-			data=newValue;
+
+
+		this.send = function(name, value) {
+			data=value;
 			updateCallback(data);
 		}
-		
+
 		this.onDispose = function () {
 			clearInterval(updateTimer);
 			updateTimer = null;
