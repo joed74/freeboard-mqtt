@@ -1679,6 +1679,11 @@ PluginEditor = function(jsEditor, valueEditor)
 						{
 							var input = $('<input type="text">').appendTo(valueCell).change(function()
 							{
+								if ((_.isUndefined(settingDef.required) || settingDef.required===false) && $(this).val()==="")
+								{
+									newSettings.settings[settingDef.name]="";
+									return;
+								}
 								if(settingDef.type == "number")
 								{
 									newSettings.settings[settingDef.name] = Number($(this).val());
@@ -1786,15 +1791,20 @@ PluginEditor = function(jsEditor, valueEditor)
 					_displayValidationError(settingDef.name, "This is required.");
 					return true;
 				}
-				else if(settingDef.type == "integer" && (newSettings.settings[settingDef.name] % 1 !== 0))
+
+				if (_.isUndefined(newSettings.settings[settingDef.name])==false &&  newSettings.settings[settingDef.name] !== "")
 				{
-					_displayValidationError(settingDef.name, "Must be a whole number.");
-					return true;
-				}
-				else if(settingDef.type == "number" && !_isNumerical(newSettings.settings[settingDef.name]))
-				{
-					_displayValidationError(settingDef.name, "Must be a number.");
-					return true;
+					// check optional settings only if they are not empty
+					if(settingDef.type == "integer" && (newSettings.settings[settingDef.name] % 1 !== 0))
+					{
+						_displayValidationError(settingDef.name, "Must be a whole number.");
+						return true;
+					}
+					else if(settingDef.type == "number" && !_isNumerical(newSettings.settings[settingDef.name]))
+					{
+						_displayValidationError(settingDef.name, "Must be a number.");
+						return true;
+					}
 				}
 				
 				// now let the datasource check
@@ -2308,12 +2318,16 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 	this.sendValue = function(sourceid, value) {
 
 		if (sourceid) {
-			var matches = sourceid.match(/datasources\[["'](\w+)["']\]\[["']([\w+\/]+)["']\]/);
+			var matches = sourceid.match(/datasources\[[\"']([^\"']+)[\"']\](\[[\"'].*[\"']\])*/);
 			if (matches) {
 				_.each(theFreeboardModel.datasources(), function(d) {
 					if (d.name() == matches[1]) {
 						if (d.datasourceInstance.send && _.isFunction(d.datasourceInstance.send)) {
 							d.datasourceInstance.send(matches[2],value);
+						}
+						else
+						{
+							console.log('cannot send to datasource '+d.name()+', send-function not defined');
 						}
 					}
 				})
@@ -2381,6 +2395,8 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 			if (!_.isUndefined(self.widgetInstance) && _.isFunction(self.widgetInstance.onCalculatedValueChanged) && !_.isUndefined(returnValue)) {
 				try {
 					self.widgetInstance.onCalculatedValueChanged(settingName, returnValue);
+					// force height refresh
+					self._heightUpdate.valueHasMutated();
 				}
 				catch (e) {
 					console.log(e.toString());
@@ -2399,7 +2415,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 
 		// Check for any calculated settings
 		var settingsDefs = widgetPlugins[self.type()].settings;
-		var datasourceRegex = new RegExp('datasources\\[\\"([^\\"]+)\\"\\](\\[\\".*\\"\\])*', 'g');
+		var datasourceRegex = new RegExp('datasources\\[[\\"\']([^\\"\']+)[\\"\']\\](\\[[\\"\'].*[\\"\']\\])*', 'g');
 		var currentSettings = self.settings();
 
 		_.each(settingsDefs, function (settingDef) {
@@ -4062,7 +4078,7 @@ freeboard.loadDatasourcePlugin({
 
 		if (isFinite(newValue))
 		{
-		    if (currentSettings.decimalplaces!==undefined)
+		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!="")
 		    {
 			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
 		    }

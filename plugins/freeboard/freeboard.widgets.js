@@ -268,7 +268,7 @@
 
 		if (isFinite(newValue))
 		{
-		    if (currentSettings.decimalplaces!==undefined)
+		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!="")
 		    {
 			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
 		    }
