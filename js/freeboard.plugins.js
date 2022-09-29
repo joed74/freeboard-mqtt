@@ -669,7 +669,7 @@ freeboard.loadDatasourcePlugin({
 
 		var currentValue = $(textElement).text();
 
-        if (currentValue == newValue)
+        if (currentValue === newValue)
             return;
 
         if ($.isNumeric(newValue) && $.isNumeric(currentValue)) {
