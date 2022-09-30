@@ -14,20 +14,20 @@
 			$(myElement).empty();
 			$(myElement).height(maxElements*60);
 
-			if (listObject && listObject.data && _.isArray(listObject.data)) {
+			if (listObject && _.isArray(listObject)) {
 
-				maxElements=listObject.data.length;
+				maxElements=listObject.length;
 				$(myElement).height(maxElements*60);
 
 				for (let i = 0; i < maxElements; i++) {
 					var subElement = $('<div class="sub-section sub-section-height-1" style="height: 54px; padding-top: 5px; padding-right: 10px; padding-left: 10px;"></div>');
 					var titleElement = $('<h2 class="section-title"></h2>');
 					titleElement.html((_.isUndefined(currentSettings.title) ? "" : currentSettings.title));
-					var indicatorElement = $('<div class="indicator-light interactive"></div>');
+					var indicatorElement = $('<div class="indicator-light interactive" data-dest="'+listObject[i].topic+'"></div>');
 					indicatorElement.toggleClass("on", true);
 					$(indicatorElement).click(self.onClick.bind(self));
 
-					var indicatorText = $('<div class="indicator-text" style="height: 26px">'+listObject.data[i].display_name+'</div>');
+					var indicatorText = $('<div class="indicator-text" style="height: 26px">'+listObject[i].display_name+'</div>');
 
 					$(subElement).append(titleElement).append(indicatorElement).append(indicatorText);
 
@@ -47,7 +47,12 @@
 			{
 				new_val=false;
 			}
-     	    this.sendValue(currentSettings.value, new_val);
+			var matches = currentSettings.value.match(/datasources\[[\"']([^\"']+)[\"']\](\[[\"'].*[\"']\])*/);
+			if (matches)
+			{
+				var dest='datasources["'+matches[1]+'"]["'+e.target.getAttribute('data-dest')+'"]';
+				this.sendValue(dest, new_val);
+			}
         }
 
 
