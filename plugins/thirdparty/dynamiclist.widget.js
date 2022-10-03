@@ -23,7 +23,7 @@
 					var subElement = $('<div class="sub-section sub-section-height-1" style="height: 54px; padding-top: 5px; padding-right: 10px; padding-left: 10px;"></div>');
 					var titleElement = $('<h2 class="section-title"></h2>');
 					titleElement.html((_.isUndefined(currentSettings.title) ? "" : currentSettings.title));
-					var indicatorElement = $('<div class="indicator-light interactive" data-dest="'+listObject[i].topic+'"></div>');
+					var indicatorElement = $('<div class="indicator-light interactive" style="cursor: pointer" data-dest="'+listObject[i].topic+'"></div>');
 					indicatorElement.toggleClass("on", true);
 					$(indicatorElement).click(self.onClick.bind(self));
 
