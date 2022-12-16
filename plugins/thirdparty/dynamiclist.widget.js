@@ -81,8 +81,11 @@
                     var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content;">' + listObject[i].display_name + '</div>');
 
                     const date = new Date(listObject[i].time);
-                    var timeText = $('<div style="float: right;margin-top:-5px;font-size: xx-small">' + date.toLocaleTimeString() + '</div>');
+                    var timeText = $('<div class="unselectable" style="float: right;margin-top:-5px;font-size: xx-small">' + date.toLocaleTimeString() + '</div>');
                     $(subElement).append(titleElement).append(picElement).append(Text).append(timeText);
+
+                    $(timeText).on('pointerup', $(subElement), self.onPointerUp);
+
                     if (listObject[i].type === 'light' || listObject[i].type === 'pump' || listObject[i].type === 'socket') {
                         $(picElement).on('pointerdown', $(subElement), self.onPointerDown);
                         $(picElement).on('pointerup', $(subElement), self.onPointerUp);
@@ -95,14 +98,6 @@
                             "cursor": "pointer"
                         });
                     }
-
-                    $(subElement).on('touchstart', self.absorbEvent);
-                    $(subElement).on('touchend', self.absorbEvent);
-                    $(subElement).on('touchmove', self.absorbEvent);
-                    $(subElement).on('touchcancel', self.absorbEvent);
-
-
-
                     $(myElement).append(subElement);
                 }
                 convertImages('img.svg-convert', function() {
@@ -153,25 +148,19 @@
             else return "#" + (0x100000000 + r((t[0] - f[0]) * p + f[0]) * 0x1000000 + r((t[1] - f[1]) * p + f[1]) * 0x10000 + r((t[2] - f[2]) * p + f[2]) * 0x100 + (f[3] > -1 && t[3] > -1 ? r(((t[3] - f[3]) * p + f[3]) * 255) : t[3] > -1 ? r(t[3] * 255) : f[3] > -1 ? r(f[3] * 255) : 255)).toString(16).slice(1, f[3] > -1 || t[3] > -1 ? undefined : -2);
         }
 
-
-        this.absorbEvent = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
         var tid;
-        var bv = 0;
         this.onPointerDown = function(e) {
             e.preventDefault();
             e.stopPropagation();
+	    var bv=0;
 
             if (tid) clearInterval(tid);
             tid = setInterval(function() {
-                bv = bv - 0.05;
+                bv = bv - 0.04;
                 setColor(e.data, shadeBlendConvert(bv, "#f0e68c"));
-                if (bv <= -0.81) {
-                    self.onClick(e);
+		if (bv <= -0.61) {
                     clearInterval(tid);
+                    setTimeout( self.onClick,1500,e);
                     tid = undefined;
                 }
             }, 50);
@@ -181,12 +170,14 @@
             e.preventDefault();
             e.stopPropagation();
 
+            if (window.getSelection) {window.getSelection().removeAllRanges();}
+              else if (document.selection) {document.selection.empty();}
+
             if (tid) {
                 clearInterval(tid);
                 tid = undefined;
-            }
-            setColor(e.data, "#f0e68c");
-            bv = 0;
+                setColor(e.data, "#f0e68c");
+	    }
         }
 
         this.onClick = function(e) {

@@ -368,6 +368,16 @@ div.CodeMirror-cursors {
     float: left;
 }
 
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
 /*! normalize.css v2.1.2 | MIT License | git.io/normalize */
 
 /* ==========================================================================
