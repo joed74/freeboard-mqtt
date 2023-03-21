@@ -817,6 +817,12 @@ freeboard.loadDatasourcePlugin({
 		'vertical-align: middle;' +
 		'height:100%;');
 
+        freeboard.addStyle('.tw-time',
+		'position: absolute;'+
+                'bottom: 0; right: 0;'+
+                'margin-bottom: 2px;'+
+                'font-size: xx-small');
+
 	freeboard.addStyle('.tw-sparkline',
 		'height:20px;');
 
@@ -829,6 +835,7 @@ freeboard.loadDatasourcePlugin({
 		var titleElement = $('<h2 class="section-title tw-title tw-td"></h2>');
         var valueElement = $('<div class="tw-value"></div>');
         var unitsElement = $('<div class="tw-unit"></div>');
+	var timeElement = $('<div class="tw-time"></div>');
         var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
 
 		function updateValueSizing()
@@ -848,7 +855,7 @@ freeboard.loadDatasourcePlugin({
 
 			$(displayElement)
 				.append($('<div class="tw-tr"></div>').append(titleElement))
-				.append($('<div class="tw-tr"></div>').append($('<div class="tw-value-wrapper tw-td"></div>').append(valueElement).append(unitsElement)))
+				.append($('<div class="tw-tr"></div>').append($('<div class="tw-value-wrapper tw-td"></div>').append(valueElement).append(unitsElement).append(timeElement)))
 				.append($('<div class="tw-tr"></div>').append(sparklineElement));
 
 			$(element).append(displayElement);
@@ -861,6 +868,7 @@ freeboard.loadDatasourcePlugin({
 
 			var shouldDisplayTitle = (!_.isUndefined(newSettings.title) && newSettings.title != "");
 			var shouldDisplayUnits = (!_.isUndefined(newSettings.units) && newSettings.units != "");
+                        var shouldDisplayTime =  (!_.isUndefined(newSettings.time) && newSettings.time != "");
 
 			if(newSettings.sparkline)
 			{
@@ -894,6 +902,17 @@ freeboard.loadDatasourcePlugin({
 				unitsElement.empty();
 				unitsElement.hide();
 			}
+
+                        if (shouldDisplayTime)
+                        {
+                                timeElement.html((_.isUndefined(newSettings.time) ? "" : newSettings.time));
+				timeElement.attr("style", null);
+			}
+                        else
+                        {
+                                timeElement.empty();
+                                timeElement.hide();
+                        }
 
 			var valueFontSize = 30;
 
@@ -942,7 +961,13 @@ freeboard.loadDatasourcePlugin({
                     addValueToSparkline(sparklineElement, newValue);
                 }
             }
-        }
+            if (settingName == "time") {
+                let dv=new Date(newValue);
+		if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
+		timeElement.text(dv.toLocaleTimeString());
+		    console.log(newValue);
+	    }
+	}
 
         this.onDispose = function () {
 
@@ -992,7 +1017,7 @@ freeboard.loadDatasourcePlugin({
                 display_name: "Value",
                 type: "calculated"
             },
-	    {
+            {
 	        name: "decimalplaces",
 		display_name: "Decimal Places",
 		type: "number",
@@ -1008,6 +1033,12 @@ freeboard.loadDatasourcePlugin({
                 display_name: "Animate Value Changes",
                 type: "boolean",
                 default_value: true
+            },
+            {
+                name: "time",
+                display_name: "Timestamp",
+                type: "calculated",
+                description: "if defined, show timestamp on bottom right corner"
             },
             {
                 name: "units",
