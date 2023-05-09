@@ -4120,8 +4120,14 @@ freeboard.loadDatasourcePlugin({
             if (settingName == "time") {
                 let dv=new Date(newValue);
 		if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-		timeElement.text(dv.toLocaleTimeString());
-		    console.log(newValue);
+                if (dv.getDay()!=new Date().getDay())
+                {
+                   timeElement.text(dv.toLocaleString());
+                }
+                else
+		{
+  		   timeElement.text(dv.toLocaleTimeString());
+		}
 	    }
 	}
 

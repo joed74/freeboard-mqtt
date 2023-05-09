@@ -138,7 +138,15 @@
 		self.send = function(name, value) {
 			if (client.isConnected()) {
 			var message = new Paho.MQTT.Message(String(value));
-			message.destinationName = name.replace(/[\[\]\""\'']/g,"")+'/set';
+                        var matches = name.match(/\[[^\s\[\]]+\]/g);
+			if (matches)
+			{
+				message.destinationName = matches[0].replace(/[\[\]\""\'']/g,"")+'/set';
+			}
+			else
+			{
+				message.destinationName = name.replace(/[\[\]\""\'']/g,"")+'/set';
+			}
 			console.log("send "+value+" to "+message.destinationName);
 			client.send(message);
 			}
