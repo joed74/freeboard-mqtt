@@ -91,7 +91,10 @@
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (settingName == "value") {
-                isOn = Boolean(newValue);
+                if (newValue==='on' || newValue==='true')
+		    isOn = true;
+		else
+		    isOn = false;
             }
             if (settingName == "on_text") {
                 onText = newValue;
