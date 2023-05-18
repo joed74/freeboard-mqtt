@@ -100,9 +100,11 @@
 			try {
 				_.each(currentSettings.topics, function (entry) {
 					var topic = entry.topic;
-					console.log( "Subscribing to " + topic )
-					client.subscribe( topic )
-					if (topic.search(/[\+#]/g)==-1) data[topic] = {}
+                                        if (topic.length>0) {
+					    console.log( "Subscribing to " + topic )
+					    client.subscribe( topic )
+					    if (topic.search(/[\+#]/g)==-1) data[topic] = {}
+					}
 				});
 			}
 			catch (e) {
