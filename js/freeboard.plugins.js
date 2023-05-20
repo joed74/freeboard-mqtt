@@ -962,11 +962,13 @@ freeboard.loadDatasourcePlugin({
                 }
             }
             if (settingName == "time") {
-                let dv=new Date(newValue);
+                const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+	        let dv=new Date(newValue);
 		if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-                if (dv.getDay()!=new Date().getDay())
+		let dd=dayOfYear(new Date())-dayOfYear(dv);
+                if (dd>0)
                 {
-                   timeElement.text(dv.toLocaleString());
+                   timeElement.text(dd+'d, '+dv.toLocaleTimeString());
                 }
                 else
 		{
