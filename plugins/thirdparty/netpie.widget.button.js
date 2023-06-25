@@ -4,7 +4,7 @@
 
 (function() {
     var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"]};
-    
+
     freeboard.loadWidgetPlugin({
         "type_name"   : "Button",
         "display_name": "Button",
@@ -77,22 +77,27 @@
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
+      result += characters.charAt(Math.floor(Math.random() *
 	  charactersLength));
    }
    return result;
 }
-	
+
     var buttonWidgetPlugin = function(settings) {
         var self = this;
         var currentSettings = settings;
 
         self.widgetID = makeid(16);
 
+	self.onClick = function(e) {
+	    e.preventDefault();
+    	    var f=new Function(currentSettings.onClick);
+	    return(f(self));
+	}
+
         var buttonElement = $("<input type=\"button\" class=\"netpie-button\" id=\""+self.widgetID+"\" value=\""+settings.caption+"\">");
         var textElement = $("<div class=\"netpie-button-text\">"+(settings.text?settings.text:"")+"</div>");
-
-		$(buttonElement).click(new Function(settings.onClick));
+	$(buttonElement).click(self.onClick.bind(self));
 
         function updateButtonColor(color) {
             if (bcolor[color]) {
@@ -108,7 +113,7 @@
         self.render = function(containerElement) {
             $(containerElement).append(buttonElement).append(textElement);
         }
-		
+
         self.getHeight = function() {
             return 1;
         }
@@ -118,9 +123,7 @@
             document.getElementById(self.widgetID).value = newSettings.caption;
             updateButtonColor(newSettings.color);
             textElement.text(newSettings.text?newSettings.text:"");
-			$(buttonElement).unbind('click');
-			$(buttonElement).click(new Function(newSettings.onClick));
-        }
+	}
 
         self.onCalculatedValueChanged = function(settingName, newValue) {
             if(settingName == "caption") {
