@@ -3,7 +3,7 @@
 /*  More information about NETPIE please visit https://netpie.io  */
 
 (function() {
-    var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"]};
+    var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"],dark:["#FFF","#3d3d3d"]};
 
     freeboard.loadWidgetPlugin({
         "type_name"   : "Button",
@@ -49,8 +49,11 @@
                     {
                         "name" : "Grey",
                         "value": "grey"
-                    }
-
+                    },
+                    {
+                        "name" : "Dark",
+                        "value": "dark"
+		    }
                 ]
             },
             {

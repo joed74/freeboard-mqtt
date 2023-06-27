@@ -3,7 +3,7 @@
 /*  More information about NETPIE please visit https://netpie.io  */
 
 (function() {
-    var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"]};
+    var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"],dark:["#FFF","#3d3d3d"]};
 
     freeboard.loadWidgetPlugin({
         "type_name"   : "ThreeButton",
@@ -59,8 +59,11 @@
                     {
                         "name" : "Grey",
                         "value": "grey"
-                    }
-
+		    },
+	            {
+                        "name" : "Dark",
+                        "value": "dark"
+		    }
                 ]
             },
 	    {
@@ -91,8 +94,11 @@
                     {
                         "name" : "Grey",
                         "value": "grey"
-                    }
-
+                    },
+		    {
+			"name" : "Dark",
+			"value": "dark"
+		    }
                 ]
             },
 	    {
@@ -123,8 +129,11 @@
                     {
                         "name" : "Grey",
                         "value": "grey"
-                    }
-
+		    },
+		    {
+			"name" : "Dark",
+			"value": "dark",
+		    }
                 ]
             },
 	    {
@@ -188,13 +197,13 @@
 	    return(f(self));
 	}
 
-        var buttonElement1 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 20px; font-size: 0.9vw\" id=\""+self.widgetID1+"\" value=\""+(settings.caption1?settings.caption1:"")+"\">");
+        var buttonElement1 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 20px; font-size: 98%; padding: unset\" id=\""+self.widgetID1+"\" value=\""+(settings.caption1?settings.caption1:"")+"\">");
 	$(buttonElement1).click(self.onClick1.bind(self));
 
-	var buttonElement2 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 20px; font-size: 0.9vw\" id=\""+self.widgetID2+"\" value=\""+(settings.caption2?settings.caption2:"")+"\">");
+	var buttonElement2 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 20px; font-size: 98%; padding: unset\" id=\""+self.widgetID2+"\" value=\""+(settings.caption2?settings.caption2:"")+"\">");
 	$(buttonElement2).click(self.onClick2.bind(self));
 
-	var buttonElement3 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 10px; font-size: 0.9vw\" id=\""+self.widgetID3+"\" value=\""+(settings.caption3?settings.caption3:"")+"\">");
+	var buttonElement3 = $("<input type=\"button\" class=\"netpie-button\" style=\"width: 20%; margin-right: 10px; font-size: 98%; padding: unset\" id=\""+self.widgetID3+"\" value=\""+(settings.caption3?settings.caption3:"")+"\">");
         var textElement = $("<div class=\"netpie-button-text\" style=\"float: none; white-space: break-spaces; display: flex; padding: unset\">"+(settings.text?settings.text:"")+"</div>");
         $(buttonElement3).click(self.onClick3.bind(self));
 
