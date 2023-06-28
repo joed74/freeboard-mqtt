@@ -13,7 +13,6 @@
 }
 
 .netpie-button-text {
-    vertical-align: bottom;
     padding: 8px 0px 0px 15px;
-    float: left;
+    display: inline-block;
 }

@@ -7,23 +7,73 @@
 
     freeboard.loadWidgetPlugin({
         "type_name"   : "Button",
-        "display_name": "Button",
-        "description" : "A simple button widget that can perform Javascript action.",
+        "display_name": "Buttons",
+        "description" : "A widget with three buttons that can perform Javascript action.",
         "fill_size" : false,
         "settings"  : [
             {
-                "name"        : "caption",
-                "display_name": "Button Caption",
-                "type"        : "text"
-            },
-            {
                 "name"        : "text",
                 "display_name": "Label Text",
-                "type"        : "text"
+                "type"        : "text",
+				"description": "Text on the right side of the last button"
             },
             {
+		"name"        : "caption",
+		"display_name": "Button Left Caption",
+		"type"        : "text",
+		"default_value": "Push me",
+		"description": "Text on button, button is hidden if text is empty"
+            },
+	    {
                 "name"        : "color",
-                "display_name": "Button Color",
+                "display_name": "Button Left Color",
+                "type"        : "option",
+                "options"     : [
+                    {
+                        "name" : "Red",
+                        "value": "red"
+                    },
+                    {
+                        "name" : "Green",
+                        "value": "green"
+                    },
+                    {
+                        "name" : "Blue",
+                        "value": "blue"
+                    },
+                    {
+                        "name" : "Yellow",
+                        "value": "yellow"
+                    },
+                    {
+                        "name" : "White",
+                        "value": "white"
+                    },
+                    {
+                        "name" : "Grey",
+                        "value": "grey"
+		    },
+	            {
+                        "name" : "Dark",
+                        "value": "dark"
+		    }
+                ]
+            },
+	    {
+                "name"        : "onClick",
+                "display_name": "Button Left Action",
+                "type"        : "script",
+                "description" : "Add some Javascript here."
+	    },
+            {
+		"name"        : "caption2",
+		"display_name": "Button Middle Caption",
+		"type"        : "text",
+		"description": "Text on button, button is hidden if text is empty"
+            },
+	    {
+                "name"        : "color2",
+                "display_name": "Button Middle Color",
                 "type"        : "option",
                 "options"     : [
                     {
@@ -50,28 +100,68 @@
                         "name" : "Grey",
                         "value": "grey"
                     },
-                    {
-                        "name" : "Dark",
-                        "value": "dark"
+		    {
+			"name" : "Dark",
+			"value": "dark"
 		    }
                 ]
             },
-            {
-                "name"        : "onClick",
-                "display_name": "onClick action",
+	    {
+                "name"        : "onClick2",
+                "display_name": "Button Middle Action",
                 "type"        : "script",
-                "description" : "Add some Javascript here. You can chat and publish with a datasource's microgear like this : microgear[\"mygear\"].chat(\"mylamp\",\"ON\"), where \"mygear\" is a datasource name."
+                "description" : "Add some Javascript here."
             },
-            {
-                "name"          : "onCreatedAction",
-                "display_name"  : "onCreated Action",
-                "type"          : "text",
-                "description"   : "JS code to run after a button is created"
+	    {
+		"name"        : "caption3",
+		"display_name": "Button Right Caption",
+		"type"        : "text",
+		"description": "Text on button, button is hidden if text is empty"
+            },
+	    {
+                "name"        : "color3",
+                "display_name": "Button Right Color",
+                "type"        : "option",
+                "options"     : [
+                    {
+                        "name" : "Red",
+                        "value": "red"
+                    },
+                    {
+                        "name" : "Green",
+                        "value": "green"
+                    },
+                    {
+                        "name" : "Blue",
+                        "value": "blue"
+                    },
+                    {
+                        "name" : "Yellow",
+                        "value": "yellow"
+                    },
+                    {
+                        "name" : "White",
+                        "value": "white"
+                    },
+                    {
+                        "name" : "Grey",
+                        "value": "grey"
+		    },
+		    {
+			"name" : "Dark",
+			"value": "dark",
+		    }
+                ]
+            },
+	    {
+                "name"        : "onClick3",
+                "display_name": "Button Right Action",
+                "type"        : "script",
+                "description" : "Add some Javascript here."
             }
-
-        ],
+	],
         newInstance   : function(settings, newInstanceCallback) {
-            newInstanceCallback(new buttonWidgetPlugin(settings));
+            newInstanceCallback(new button3WidgetPlugin(settings));
         }
     });
 
@@ -86,11 +176,14 @@
    return result;
 }
 
-    var buttonWidgetPlugin = function(settings) {
+    var button3WidgetPlugin = function(settings) {
         var self = this;
         var currentSettings = settings;
+		var myelement;
 
         self.widgetID = makeid(16);
+	self.widgetID2 = makeid(16);
+	self.widgetID3 = makeid(16);
 
 	self.onClick = function(e) {
 	    e.preventDefault();
@@ -98,24 +191,82 @@
 	    return(f(self));
 	}
 
-        var buttonElement = $("<input type=\"button\" class=\"netpie-button\" id=\""+self.widgetID+"\" value=\""+settings.caption+"\">");
-        var textElement = $("<div class=\"netpie-button-text\">"+(settings.text?settings.text:"")+"</div>");
+	self.onClick2 = function(e) {
+            e.preventDefault();
+	    var f=new Function(currentSettings.onClick2);
+	    return(f(self));
+	}
+
+	self.onClick3 = function(e) {
+            e.preventDefault();
+	    var f=new Function(currentSettings.onClick3);
+	    return(f(self));
+	}
+
+        var buttonElement = $("<input type=\"button\" class=\"netpie-button\" style=\"margin-right: 20px; padding: unset\" id=\""+self.widgetID+"\" value=\""+(settings.caption?settings.caption:"")+"\">");
 	$(buttonElement).click(self.onClick.bind(self));
 
-        function updateButtonColor(color) {
+	var buttonElement2 = $("<input type=\"button\" class=\"netpie-button\" style=\"margin-right: 20px; padding: unset\" id=\""+self.widgetID2+"\" value=\""+(settings.caption2?settings.caption2:"")+"\">");
+	$(buttonElement2).click(self.onClick2.bind(self));
+
+	var buttonElement3 = $("<input type=\"button\" class=\"netpie-button\" style=\"margin-right: 10px; padding: unset\" id=\""+self.widgetID3+"\" value=\""+(settings.caption3?settings.caption3:"")+"\">");
+	var textElement = $("<div style=\"display: table\"><div style=\"display: table-cell; white-space: break-spaces; vertical-align: middle; height: 35px; font-size: 95%\">"+(settings.text?settings.text:"")+"</div></div>");
+        $(buttonElement3).click(self.onClick3.bind(self));
+
+        function updateButton(element, caption, color) {
+			if (caption) element[0].value=caption;
             if (bcolor[color]) {
-                buttonElement.css({
+                element.css({
                     "color" : bcolor[color][0],
                     "background-color" : bcolor[color][1]
                 });
-            }
+            } else {
+                element.css({
+                    "color" : bcolor["red"][0],
+                    "background-color" : bcolor["red"][1]
+                });
+			}
         }
 
-        updateButtonColor(settings.color);
+        updateButton(buttonElement, settings.caption, settings.color);
+	    updateButton(buttonElement2, settings.caption2, settings.color2);
+	    updateButton(buttonElement3, settings.caption3, settings.color3);
 
         self.render = function(containerElement) {
-            $(containerElement).append(buttonElement).append(textElement);
-        }
+			myelement = containerElement;
+
+			let cnt=0;
+			if (typeof currentSettings.caption === "string" && currentSettings.caption.trim().length > 0) cnt++;
+			if (typeof currentSettings.caption2 === "string" && currentSettings.caption2.trim().length > 0) cnt++;
+			if (typeof currentSettings.caption3 === "string" && currentSettings.caption3.trim().length > 0) cnt++;
+
+		        let fsize=120;
+			let width=50;
+			if (cnt==3) {
+			   width=20;
+			   fsize=98;
+			}
+			if (cnt==2) {
+			   width=35;
+			   fsize=110;
+			}
+
+			let last=$(containerElement).append("<div style='height: 7px'></div>");
+			if (typeof currentSettings.caption === "string" && currentSettings.caption.trim().length > 0) {
+				buttonElement.css({"width" : width+"%","font-size" : fsize+"%"});
+				last=last.append(buttonElement);
+			}
+			if (typeof currentSettings.caption2 === "string" && currentSettings.caption2.trim().length > 0) {
+				buttonElement2.css({"width" : width+"%","font-size" : fsize+"%"});
+				last=last.append(buttonElement2);
+			}
+			if (typeof currentSettings.caption3 === "string" && currentSettings.caption3.trim().length > 0) {
+				buttonElement3.css({"width" : width+"%","font-size" : fsize+"%"});
+				last=last.append(buttonElement3);
+			}
+
+			$(containerElement).append(textElement);
+	}
 
         self.getHeight = function() {
             return 1;
@@ -123,27 +274,29 @@
 
         self.onSettingsChanged = function(newSettings) {
             currentSettings = newSettings;
-            document.getElementById(self.widgetID).value = newSettings.caption;
-            updateButtonColor(newSettings.color);
-            textElement.text(newSettings.text?newSettings.text:"");
+			$(buttonElement)[0].value=(newSettings.caption?newSettings.caption:"");
+			$(buttonElement2)[0].value=(newSettings.caption2?newSettings.caption2:"");
+			$(buttonElement3)[0].value=(newSettings.caption3?newSettings.caption3:"");
+            updateButton(buttonElement, newSettings.caption, newSettings.color);
+            updateButton(buttonElement2, newSettings.caption2, newSettings.color2);
+            updateButton(buttonElement3, newSettings.caption3, newSettings.color3);
+	        textElement.text(newSettings.text?newSettings.text:"");
+			if (myelement) self.render(myelement);
 	}
 
         self.onCalculatedValueChanged = function(settingName, newValue) {
             if(settingName == "caption") {
                 $(buttonElement).val(newValue);
             }
-        }
+            if(settingName == "caption2") {
+		$(buttonElement2).val(newValue);
+	    }
+	    if(settingName == "caption3") {
+		$(buttonElement3).val(newValue);
+	    }
+	}
 
         self.onDispose = function() {
-        }
-
-        if (settings.onCreatedAction) {
-            var timer = setInterval(function() {
-                if (Object.getOwnPropertyNames(microgear).length > 0) {
-                    clearInterval(timer);
-                    eval(settings.onCreatedAction);
-                }
-            },200);
         }
     }
 }());
