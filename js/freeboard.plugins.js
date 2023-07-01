@@ -968,7 +968,7 @@ freeboard.loadDatasourcePlugin({
 		let dd=dayOfYear(new Date())-dayOfYear(dv);
                 if (dd>0)
                 {
-                   timeElement.text(dd+'d, '+dv.toLocaleTimeString());
+                   timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());
                 }
                 else
 		{
@@ -1556,7 +1556,8 @@ freeboard.loadDatasourcePlugin({
         var titleElement = $('<h2 class="section-title"></h2>');
         var stateElement = $('<div class="indicator-text"></div>');
         var indicatorElement = $('<div class="indicator-light"></div>');
-        var currentSettings = settings;
+        var timeElement = $('<div class="tw-time" style="margin-right: 10px"></div>');
+	var currentSettings = settings;
         var isOn = false;
         var onText;
         var offText;
@@ -1573,7 +1574,7 @@ freeboard.loadDatasourcePlugin({
         }
 
         this.render = function (element) {
-            $(element).append(titleElement).append(indicatorElement).append(stateElement);
+            $(element).append(titleElement).append(indicatorElement).append(stateElement).append(timeElement);
         }
 
         this.onSettingsChanged = function (newSettings) {
@@ -1593,6 +1594,20 @@ freeboard.loadDatasourcePlugin({
                 offText = newValue;
             }
 
+            if (settingName == "time") {
+                const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+		let dv=new Date(newValue);
+                if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
+                let dd=dayOfYear(new Date())-dayOfYear(dv);
+		if (dd>0)
+                {
+                   timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());
+                }
+                else
+                {
+                   timeElement.text(dv.toLocaleTimeString());
+                }
+            }
             updateState();
         }
 
@@ -1620,7 +1635,13 @@ freeboard.loadDatasourcePlugin({
 	            display_name: "Value",
 	            type: "calculated"
 	        },
-	        {
+                {
+                    name: "time",
+                    display_name: "Timestamp",
+                    type: "calculated",
+                    description: "if defined, show timestamp on bottom right corner"
+                },
+		{
 	            name: "on_text",
 	            display_name: "On Text",
 	            type: "calculated"

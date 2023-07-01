@@ -95,7 +95,7 @@
                 let dd=dayOfYear(new Date())-dayOfYear(dv);
 		if (dd>0)
                 {
-                   timeElement.text(dd+'d, '+dv.toLocaleTimeString());
+                   timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());
                 }
                 else
                 {

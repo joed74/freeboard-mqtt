@@ -21,7 +21,7 @@
                 "required"     : true,
 				"validator"	   : function(value) {
 					if (!value.match(/^(wss?):\/\/((\[(.+)\])|([^\/]+?))(:(\d+))?(\/.*)$/)) return "incorrect format, please reread description";
-					return(""); 
+					return("");
 				}
             },
             {
@@ -40,7 +40,7 @@
 				{
 				                "name"        : "topic",
 								"display_name": "Topic",
-								"type"        : "text",								
+								"type"        : "text",
 								"required"    : true
 				}
 				]
@@ -61,37 +61,51 @@
         var self = this;
         var data = {};
         var topicList = [];
-		var client;
+	var client;
 
         var currentSettings = settings;
 
-		function connect() {
-
-			if (client!==undefined) {
-				client.onConnectionLost=client.onMessageArrived=function() {};
-				if (client.isConnected()) client.disconnect();
-			}
-		
-			options = {
-				timeout: 3,
-				onSuccess: onConnect,
-				onFailure: onFailure,
-				cleanSession: true
-			}
-		
-			var clientid = currentSettings.client_id+'_'+Math.floor(Math.random()*100000)+1;
-			try {
-				client = new Paho.MQTT.Client(currentSettings.server.replace("%HOST%",location.host),
-                                        clientid);
-				console.log( "Attempting connection..." );
-				client.connect( options );											
-			}
-			catch (e)
-			{
-				console.log(e);
+	function connect() {
+		if (client!==undefined) {
+			client.onConnectionLost=client.onMessageArrived=function() {};
+			if (client.isConnected()) {
+				console.log("Closing old connection");
+				client.disconnect();
 			}
 		}
-		
+
+		options = {
+			timeout: 3,
+			onSuccess: onConnect,
+			onFailure: onFailure,
+			reconnect: true,
+			cleanSession: true
+		}
+
+		var clientid = currentSettings.client_id+'_'+Math.floor(Math.random()*100000)+1;
+		try {
+			let host=currentSettings.server.replace("%HOST%",location.host);
+			client = new Paho.MQTT.Client(host, clientid);
+			console.log( "Attempting connection to "+host );
+			client.connect( options );
+		}
+		catch (e)
+		{
+			console.log(e);
+		}
+	}
+
+	function disconnect() {
+		if (client!==undefined) {
+			client.onConnectionLost=client.onMessageArrived=function() {};
+			if (client.isConnected()) {
+				console.log("Disconnecting...");
+				client.disconnect();
+			}
+			client=undefined;
+		}
+	}
+
         function onConnect() {
             console.log("Connected");
 			client.onConnectionLost = onConnectionLost;
@@ -108,7 +122,7 @@
 				});
 			}
 			catch (e) {
-			}			
+			}
             // update the data to main to populate the topics list there
             updateCallback( data );
         };
@@ -116,7 +130,6 @@
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0)
                 console.log("onConnectionLost:"+responseObject.errorMessage);
-			connect();
         };
 
         function onMessageArrived(message) {
@@ -129,18 +142,18 @@
             } catch(err) {
                 data[message.destinationName] = message.payloadString
             }
-			updateCallback( data );
+	    updateCallback( data );
         };
 
         function onFailure( message ) {
             console.log( "Connection failed - " + message.errorMessage )
         }
 
-		// Allow datasource to post mqtt messages
-		self.send = function(name, value) {
-			if (client.isConnected()) {
+	// Allow datasource to post mqtt messages
+	self.send = function(name, value) {
+		if (client.isConnected()) {
 			var message = new Paho.MQTT.Message(String(value));
-                        var matches = name.match(/\[[^\s\[\]]+\]/g);
+	                var matches = name.match(/\[[^\s\[\]]+\]/g);
 			if (matches)
 			{
 				message.destinationName = matches[0].replace(/[\[\]\""\'']/g,"")+'/set';
@@ -151,15 +164,15 @@
 			}
 			console.log("send "+value+" to "+message.destinationName);
 			client.send(message);
-			}
 		}
+	}
 
         // **onSettingsChanged(newSettings)** (required) : A public function we must implement that will be called when a user makes a change to the settings.
         self.onSettingsChanged = function(newSettings)
         {
             data = {};
             currentSettings = newSettings;
-			connect();
+	    connect(); // close and reconnect
         }
 
         // **updateNow()** (required) : A public function we must implement that will be called when the user wants to manually refresh the datasource
@@ -171,15 +184,10 @@
         // **onDispose()** (required) : A public function we must implement that will be called when this instance of this plugin is no longer needed. Do anything you need to cleanup after yourself here.
         self.onDispose = function()
         {
-            if (client.isConnected()) {
-				client.onConnectionLost=client.onMessageArrived=function() {};
-                console.log( "Disconnecting from broker..." )
-                client.disconnect();
-            }
-            client = {};
+	    disconnect();
         }
 
-		connect();
+	connect();
 
     }
 }());

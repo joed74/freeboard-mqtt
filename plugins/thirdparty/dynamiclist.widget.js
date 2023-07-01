@@ -94,7 +94,18 @@
                     var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content;">' + listObject[i].display_name + '</div>');
 
                     const date = new Date(listObject[i].time);
-                    var timeText = $('<div class="unselectable" style="float: right;margin-top:-5px;font-size: xx-small">' + date.toLocaleTimeString() + '</div>');
+		    const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+		    let dd=dayOfYear(new Date())-dayOfYear(date);
+		    let timestr;
+		    if (dd>0) 
+		    {
+			timestr='('+dd+'d) '+date.toLocaleTimeString();
+		    }
+		    else
+	            {
+			timestr=date.toLocaleTimeString();
+	            }
+                    var timeText = $('<div class="unselectable" style="float: right;margin-top:-5px;font-size: xx-small">' + timestr + '</div>');
                     $(subElement).append(titleElement).append(picElement).append(Text).append(timeText);
 
                     if (listObject[i].type === 'light' || listObject[i].type === 'pump' || listObject[i].type === 'socket') {

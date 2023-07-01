@@ -16,6 +16,12 @@
                 display_name: "Value",
                 type: "calculated"
             },
+            {
+		name: "time",
+		display_name: "Timestamp",
+		type: "calculated",
+		description: "if defined, show timestamp on bottom right corner"
+	    },
 	    {
 		name: "format",
 		display_name: "Format to send",
@@ -45,7 +51,8 @@
         var titleElement = $('<h2 class="section-title"></h2>');
         var stateElement = $('<div class="indicator-text"></div>');
         var indicatorElement = $('<div class="indicator-light interactive"></div>');
-        var currentSettings = settings;
+        var timeElement = $('<div class="tw-time" style="margin-right: 10px"></div>');
+	var currentSettings = settings;
         var isOn = false;
         var onText;
         var offText;
@@ -78,7 +85,7 @@
 
 
         this.render = function (element) {
-            $(element).append(titleElement).append(indicatorElement).append(stateElement);
+            $(element).append(titleElement).append(indicatorElement).append(stateElement).append(timeElement);
             $(indicatorElement).click(this.onClick.bind(this));
 	    $(stateElement).click(this.onClick.bind(this));
 	}
@@ -103,6 +110,20 @@
                 offText = newValue;
             }
 
+            if (settingName == "time") {
+                const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+		let dv=new Date(newValue);
+                if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
+                let dd=dayOfYear(new Date())-dayOfYear(dv);
+		if (dd>0)
+                {
+                   timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());
+                }
+                else
+                {
+                   timeElement.text(dv.toLocaleTimeString());
+                }
+            }
             updateState();
         }
 
