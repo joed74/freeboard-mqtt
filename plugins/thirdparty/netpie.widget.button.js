@@ -247,23 +247,28 @@
 			   fsize=98;
 			}
 			if (cnt==2) {
-			   width=35;
+			   width=34;
 			   fsize=110;
 			}
 
-			let last=$(containerElement).append("<div style='height: 7px'></div>");
+			$(containerElement).append("<div style='height: 7px'></div>");
+			let lastbutton;
 			if (typeof currentSettings.caption === "string" && currentSettings.caption.trim().length > 0) {
 				buttonElement.css({"width" : width+"%","font-size" : fsize+"%"});
-				last=last.append(buttonElement);
+				lastbutton=buttonElement;
+				$(containerElement).append(buttonElement);
 			}
 			if (typeof currentSettings.caption2 === "string" && currentSettings.caption2.trim().length > 0) {
 				buttonElement2.css({"width" : width+"%","font-size" : fsize+"%"});
-				last=last.append(buttonElement2);
+				lastbutton=buttonElement2;
+				$(containerElement).append(buttonElement2);
 			}
 			if (typeof currentSettings.caption3 === "string" && currentSettings.caption3.trim().length > 0) {
 				buttonElement3.css({"width" : width+"%","font-size" : fsize+"%"});
-				last=last.append(buttonElement3);
-			}
+				lastbutton=buttonElement3;
+				$(containerElement).append(buttonElement3);
+			}			
+			lastbutton.css({"margin-right" : "10px"});
 
 			$(containerElement).append(textElement);
 	}
