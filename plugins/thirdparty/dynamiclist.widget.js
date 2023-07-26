@@ -46,12 +46,18 @@
                     titleElement.html((_.isUndefined(currentSettings.title) ? "" : currentSettings.title));
 
                     let picname;
+                    let value = listObject[i].value;			
                     switch (listObject[i].type) {
                         case 'light':
                             picname = "img/extra/light_light_dim_100.svg";
                             break;
                         case 'door':
-                            picname = "img/extra/fts_door_open.svg";
+                            if (value=='unlocked')
+		               picname = "img/extra/fts_door_unlocked.svg";
+		            else if (value=='tilted')
+			       picname = "img/extra/fts_door_tilt.svg";
+		            else
+                               picname = "img/extra/fts_door_open.svg";
                             break;
                         case 'pump':
                             picname = "img/extra/sani_pump.svg";
@@ -63,7 +69,10 @@
                             picname = "img/extra/fts_door_locked.svg";
                             break;
                         case 'window':
-                            picname = "img/extra/fts_window_1w_open.svg";
+		            if (value=='tilted')
+			       picname = "img/extra/fts_window_1w_tilt.svg";
+			    else
+                               picname = "img/extra/fts_window_1w_open.svg";
                             break;
                         case 'motion':
                             picname = "img/extra/message_presence.svg";
