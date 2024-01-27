@@ -1662,25 +1662,6 @@ a.ui-button:active,
 
 /*! gridster.js - v0.1.0 - 2013-06-14 - * http://gridster.net/ - Copyright (c) 2013 ducksboard; Licensed MIT */
 .gridster{position:relative}.gridster>*{margin:0 auto;-webkit-transition:height .4s;-moz-transition:height .4s;-o-transition:height .4s;-ms-transition:height .4s;transition:height .4s}.gridster .gs_w{z-index:2;position:absolute}.ready .gs_w:not(.preview-holder){-webkit-transition:opacity .3s,left .3s,top .3s;-moz-transition:opacity .3s,left .3s,top .3s;-o-transition:opacity .3s,left .3s,top .3s;transition:opacity .3s,left .3s,top .3s}.ready .gs_w:not(.preview-holder){-webkit-transition:opacity .3s,left .3s,top .3s,width .3s,height .3s;-moz-transition:opacity .3s,left .3s,top .3s,width .3s,height .3s;-o-transition:opacity .3s,left .3s,top .3s,width .3s,height .3s;transition:opacity .3s,left .3s,top .3s,width .3s,height .3s}.gridster .preview-holder{z-index:1;position:absolute;background-color:#fff;border-color:#fff;opacity:.3}.gridster .player-revert{z-index:10!important;-webkit-transition:left .3s,top .3s!important;-moz-transition:left .3s,top .3s!important;-o-transition:left .3s,top .3s!important;transition:left .3s,top .3s!important}.gridster .dragging{z-index:10!important;-webkit-transition:all 0s!important;-moz-transition:all 0s!important;-o-transition:all 0s!important;transition:all 0s!important}
-.netpie-button {
-    height: 36px;
-    width: 50%;
-    display: inline-block;
-    box-shadow: 0px 1px 0px 1px #111111;
-    border-radius: 4px;
-    border-color: #eee;
-    text-decoration: none;
-    text-align: center;
-    outline: none;
-    font-size: 115%;
-    float: left;
-}
-
-.netpie-button-text {
-    padding: 8px 0px 0px 15px;
-    display: inline-block;
-}
-
 .unselectable {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
