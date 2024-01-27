@@ -43,6 +43,8 @@
                 fillClass: 'rangeSlider__fill',
                 bufferClass: 'rangeSlider__buffer',
                 handleClass: 'rangeSlider__handle',
+                handleClass_active: 'rangeSlider__handle_active',
+                handleClass_after: 'rangeSlider__handle_after',
                 startEvent: ['mousedown', 'touchstart', 'pointerdown'],
                 moveEvent: ['mousemove', 'touchmove', 'pointermove'],
                 endEvent: ['mouseup', 'touchend', 'pointerup'],
@@ -568,6 +570,10 @@
                 removeClass(this.range, this.options.disabledClass);
             }
 
+            removeClass(this.handle, this.options.handleClass_after);
+            removeClass(this.handle, this.options.handleClass_active);
+            addClass(this.handle, this.options.handleClass);
+
             this._setPosition(this.position);
             if (this.options.bufferClass && this.options.buffer) {
                 this._setBufferPosition(this.options.buffer);
@@ -595,6 +601,10 @@
             addEventListeners(document, this.options.moveEvent, this._handleMove);
             addEventListeners(document, this.options.endEvent, this._handleEnd);
 
+            removeClass(this.handle, this.options.handleClass_after);
+	    addClass(this.handle, this.options.handleClass_active);
+	    removeClass(this.handle, this.options.handleClass);
+
             // If we click on the handle don't set the new position
 	    if (onHandle) return;
 
@@ -606,7 +616,6 @@
 
             if (posX >= handleX && posX < handleX + this.handleWidth) {
                 this.grabX = posX - handleX;
-		console.debug('grabX='+this.grabX);
 	    }
             this._updatePercentFromValue();
         };
@@ -626,6 +635,9 @@
 
             // Ok we're done fire the change event
             triggerEvent(this.element, 'change', {origin: this.identifier});
+
+            addClass(this.handle, this.options.handleClass_after);
+            removeClass(this.handle, this.options.handleClass_active);
 
             if (this.isInteractsNow || this.needTriggerEvents) {
                 if (this.onSlideEnd && typeof this.onSlideEnd === 'function') {
@@ -839,6 +851,11 @@
                     this.element.setAttribute('step', '' + obj.step);
                     this.step = obj.step;
                     this.toFixed = this._toFixed(obj.step);
+                }
+
+                if (!(obj.onhandle===undefined)) {
+                    this.element.setAttribute('onhandle', ''+ obj.onhandle);
+                    this.onhandle = obj.onhandle;
                 }
 
                 if (isNumberLike(obj.buffer)) {

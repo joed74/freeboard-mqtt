@@ -268,7 +268,7 @@ if (typeof globalStore === "undefined") {
             var oldvalue = sliderObject[self.widgetID].value;
 
             /* have to update in 2 steps */
-            sliderObject[self.widgetID].update({min: Number(newSettings.min||0), max: Number(newSettings.max||100), step: Number(newSettings.step||1)});
+            sliderObject[self.widgetID].update({onhandle: newSettings.onhandle, min: Number(newSettings.min||0), max: Number(newSettings.max||100), step: Number(newSettings.step||1)});
             sliderObject[self.widgetID].update({value: oldvalue});
 
             valueElement.text(sliderObject[self.widgetID].value);
