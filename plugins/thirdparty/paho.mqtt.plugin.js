@@ -85,7 +85,7 @@
 		var clientid = currentSettings.client_id+'_'+Math.floor(Math.random()*100000)+1;
 		try {
 			let host=currentSettings.server.replace("%HOST%",location.host);
-			client = new Paho.MQTT.Client(host, clientid);
+			client = new Paho.Client(host, clientid);
 			console.log( "Attempting connection to "+host );
 			client.connect( options );
 		}
@@ -152,7 +152,7 @@
 	// Allow datasource to post mqtt messages
 	self.send = function(name, value) {
 		if (client.isConnected()) {
-			var message = new Paho.MQTT.Message(String(value));
+			var message = new Paho.Message(String(value));
 	                var matches = name.match(/\[[^\s\[\]]+\]/g);
 			if (matches)
 			{
