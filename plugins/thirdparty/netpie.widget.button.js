@@ -212,7 +212,7 @@
 	$(buttonElement2).click(self.onClick2.bind(self));
 
 	var buttonElement3 = $("<input type=\"button\" class=\"netpie-button\" style=\"margin-right: 10px; padding: unset\" id=\""+self.widgetID3+"\" value=\""+(settings.caption3?settings.caption3:"")+"\">");
-	var textElement = $("<div style=\"display: table\"><div style=\"display: table-cell; white-space: break-spaces; vertical-align: middle; height: 35px; font-size: 95%\">"+(settings.text?settings.text:"")+"</div></div>");
+	var textElement = $("<div style=\"display: table-cell; white-space: break-spaces; vertical-align: middle; height: 35px; font-size: 95%\">"+(settings.text?settings.text:"")+"</div>");
         $(buttonElement3).click(self.onClick3.bind(self));
 
         function updateButton(element, caption, color) {
