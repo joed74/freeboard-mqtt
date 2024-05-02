@@ -138,6 +138,36 @@ function onMessageArrived(message) {
 			DISCONNECT: 14
 		};
 
+		var PROPERTY_TYPE = {
+			PayloadFormatIndicator: 1,
+			MessageExpiryInterval: 2,
+			ContentType: 3,
+			ResponseTopic: 8,
+			CorrelationData: 9,
+			SubscriptionIdentifier: 11,
+			SessionExpiryInterval: 17,
+			AssignedClientIdentifier: 18,
+			ServerKeepAlive: 19,
+			AuthenticationMethod: 21,
+			AuthenticationData: 22,
+			RequestProblemInformation: 23,
+			WillDelayInterval: 24,
+			RequestResponseInformation: 25,
+			ResponseInformation: 26,
+			ServerReference: 28,
+			ReasonString: 31,
+			ReceiveMaximum: 33,
+			TopicAliasMaximum: 34,
+			TopicAlias: 35,
+			MaximumQoS: 36,
+			RetainAvailable: 37,
+			UserProperty: 38,
+			MaximumPacketSize: 39,
+			WildcardSubscriptionAvailable: 40,
+			SubscriptionIdentifierAvailable: 41,
+			SharedSubscriptionAvailable: 42
+		};
+
 		// Collection of utility methods used to simplify module code
 		// and promote the DRY pattern.
 
@@ -247,6 +277,8 @@ function onMessageArrived(message) {
 		var MqttProtoIdentifierv3 = [0x00,0x06,0x4d,0x51,0x49,0x73,0x64,0x70,0x03];
 		//MQTT proto/version for 311         4    M    Q    T    T    4
 		var MqttProtoIdentifierv4 = [0x00,0x04,0x4d,0x51,0x54,0x54,0x04];
+		//MQTT proto/version for 5
+		var MqttProtoIdentifierv5 = [0x00,0x04,0x4d,0x51,0x54,0x54,0x05];
 
 		/**
 	 * Construct an MQTT wire protocol message.
@@ -309,6 +341,9 @@ function onMessageArrived(message) {
 				case 4:
 					remLength += MqttProtoIdentifierv4.length + 3;
 					break;
+				case 5:
+					remLength += MqttProtoIdentifierv5.length + 4; // property byte
+					break;
 				}
 
 				remLength += UTF8Length(this.clientId) + 2;
@@ -335,6 +370,7 @@ function onMessageArrived(message) {
 				}
 				remLength += this.requestedQos.length; // 1 byte for each topic's Qos
 				// QoS on Subscribe only
+				if (this.mqttVersion == 5) remLength += 1; // property byte
 				break;
 
 			case MESSAGE_TYPE.UNSUBSCRIBE:
@@ -343,6 +379,7 @@ function onMessageArrived(message) {
 					topicStrLength[i] = UTF8Length(this.topics[i]);
 					remLength += topicStrLength[i] + 2;
 				}
+				if (this.mqttVersion == 5) remLength += 1; // property byte
 				break;
 
 			case MESSAGE_TYPE.PUBREL:
@@ -355,6 +392,7 @@ function onMessageArrived(message) {
 				if (this.payloadMessage.retained) first |= 0x01;
 				destinationNameLength = UTF8Length(this.payloadMessage.destinationName);
 				remLength += destinationNameLength + 2;
+				if (this.mqttVersion == 5) remLength += 1; // property length (0)
 				var payloadBytes = this.payloadMessage.payloadBytes;
 				remLength += payloadBytes.byteLength;
 				if (payloadBytes instanceof ArrayBuffer)
@@ -382,8 +420,12 @@ function onMessageArrived(message) {
 			byteStream.set(mbi,1);
 
 			// If this is a PUBLISH then the variable header starts with a topic
-			if (this.type == MESSAGE_TYPE.PUBLISH)
+			if (this.type == MESSAGE_TYPE.PUBLISH) {
 				pos = writeString(this.payloadMessage.destinationName, destinationNameLength, byteStream, pos);
+				if (this.mqttVersion == 5) {
+					byteStream[pos++] = 0; // no properties
+				}
+			}
 			// If this is a CONNECT then the variable header contains the protocol name/version, flags and keepalive time
 
 			else if (this.type == MESSAGE_TYPE.CONNECT) {
@@ -395,6 +437,10 @@ function onMessageArrived(message) {
 				case 4:
 					byteStream.set(MqttProtoIdentifierv4, pos);
 					pos += MqttProtoIdentifierv4.length;
+					break;
+				case 5:
+					byteStream.set(MqttProtoIdentifierv5, pos);
+					pos += MqttProtoIdentifierv5.length;
 					break;
 				}
 				var connectFlags = 0;
@@ -413,6 +459,9 @@ function onMessageArrived(message) {
 					connectFlags |= 0x40;
 				byteStream[pos++] = connectFlags;
 				pos = writeUint16 (this.keepAliveInterval, byteStream, pos);
+				if (this.mqttVersion == 5) {
+					byteStream[pos++] = 0; // no properties
+				}
 			}
 
 			// Output the messageIdentifier - if there is one
@@ -447,6 +496,9 @@ function onMessageArrived(message) {
 				//    	    	break;
 
 			case MESSAGE_TYPE.SUBSCRIBE:
+				if (this.mqttVersion == 5) {
+					byteStream[pos++] = 0; // no properties
+				}
 				// SUBSCRIBE has a list of topic strings and request QoS
 				for (var i=0; i<this.topics.length; i++) {
 					pos = writeString(this.topics[i], topicStrLength[i], byteStream, pos);
@@ -455,6 +507,9 @@ function onMessageArrived(message) {
 				break;
 
 			case MESSAGE_TYPE.UNSUBSCRIBE:
+				if (this.mqttVersion == 5) {
+					byteStream[pos++] = 0; // no properties
+				}
 				// UNSUBSCRIBE has a list of topic strings
 				for (var i=0; i<this.topics.length; i++)
 					pos = writeString(this.topics[i], topicStrLength[i], byteStream, pos);
@@ -467,7 +522,71 @@ function onMessageArrived(message) {
 			return buffer;
 		};
 
-		function decodeMessage(input,pos) {
+		function parseProperties(input,pos,len) {
+			var endingPos = pos + len;
+			var propContainer = {};
+			propContainer.userProperties = {};
+			while (pos<endingPos) {
+				var propId = input[pos++];
+				switch (propId) {
+					case PROPERTY_TYPE.PayloadFormatIndicator:
+					case PROPERTY_TYPE.RequestProblemInformation:
+					case PROPERTY_TYPE.RequestResponseInformation:
+					case PROPERTY_TYPE.MaximumQoS:
+					case PROPERTY_TYPE.RetainAvailable:
+					case PROPERTY_TYPE.WildcardSubscriptionAvailable:
+					case PROPERTY_TYPE.SubscriptionIdentifierAvailable:
+					case PROPERTY_TYPE.SharedSubscriptionAvailable:
+						// Byte
+						pos++;
+						break;
+					case PROPERTY_TYPE.ServerKeepAlive:
+					case PROPERTY_TYPE.ReceiveMaximum:
+					case PROPERTY_TYPE.TopicAliasMaximum:
+					case PROPERTY_TYPE.TopicAlias:
+						// Two Byte Integer
+						pos+=2;
+						break;
+					case PROPERTY_TYPE.MessageExpiryInterval:
+					case PROPERTY_TYPE.SessionExpiryInterval:
+					case PROPERTY_TYPE.WillDelayInterval:
+					case PROPERTY_TYPE.MaximumPacketSize:
+						// Four Byte Integer
+						pos+=4;
+						break;
+					case PROPERTY_TYPE.ContentType:
+					case PROPERTY_TYPE.ResponseTopic:
+					case PROPERTY_TYPE.AssignedClientIdentifier:
+					case PROPERTY_TYPE.AuthenticationMethod:
+					case PROPERTY_TYPE.ResponseInformation:
+					case PROPERTY_TYPE.ServerReference:
+					case PROPERTY_TYPE.ReasonString:
+						// UTF-8 Encoded String
+						var strLen = readUint16(input, pos);
+						pos += 2;
+						pos += strLen;
+						break;
+					case PROPERTY_TYPE.UserProperty:
+						// UTF-8 String Pair
+						var keyLen = readUint16(input, pos);
+						pos += 2;
+						var key = parseUTF8(input, pos, keyLen);
+						pos += keyLen;
+						var valLen = readUint16(input, pos);
+						pos += 2;
+						var val = parseUTF8(input, pos, valLen);
+						pos += valLen;
+						propContainer.userProperties[key] = val;
+						break;
+					default:
+						pos=endingPos;
+						break;
+				}
+			}
+			return propContainer;
+		};
+
+		function decodeMessage(input,pos,mqttVersion) {
 			var startingPos = pos;
 			var first = input[pos];
 			var type = first >> 4;
@@ -515,6 +634,12 @@ function onMessageArrived(message) {
 					wireMessage.messageIdentifier = readUint16(input, pos);
 					pos += 2;
 				}
+				var properties = {};
+				if (mqttVersion == 5) {
+					var proplen = input[pos++];
+					if (proplen>0) properties = parseProperties(input, pos, proplen);
+					pos += proplen;
+				}
 
 				var message = new Message(input.subarray(pos, endPos));
 				if ((messageInfo & 0x01) == 0x01)
@@ -523,6 +648,7 @@ function onMessageArrived(message) {
 					message.duplicate =  true;
 				message.qos = qos;
 				message.destinationName = topicName;
+				message.properties = properties;
 				wireMessage.payloadMessage = message;
 				break;
 
@@ -896,6 +1022,7 @@ function onMessageArrived(message) {
 				throw new Error(format(ERROR.INVALID_STATE, ["not connected"]));
 
             var wireMessage = new WireMessage(MESSAGE_TYPE.SUBSCRIBE);
+			wireMessage.mqttVersion = this.connectOptions.mqttVersion;
             wireMessage.topics = filter.constructor === Array ? filter : [filter];
             if (subscribeOptions.qos === undefined)
                 subscribeOptions.qos = 0;
@@ -953,6 +1080,7 @@ function onMessageArrived(message) {
 
 			var wireMessage = new WireMessage(MESSAGE_TYPE.PUBLISH);
 			wireMessage.payloadMessage = message;
+			wireMessage.mqttVersion = this.connectOptions.mqttVersion;
 
 			if (this.connected) {
 			// Mark qos 1 & 2 message as "ACK required"
@@ -1239,7 +1367,7 @@ function onMessageArrived(message) {
 			try {
 				var offset = 0;
 				while(offset < byteArray.length) {
-					var result = decodeMessage(byteArray,offset);
+					var result = decodeMessage(byteArray,offset,this.connectOptions.mqttVersion);
 					var wireMessage = result[0];
 					offset = result[1];
 					if (wireMessage !== null) {
@@ -1606,8 +1734,17 @@ function onMessageArrived(message) {
 						return;
 					}
 				} else {
-				// Otherwise we never had a connection, so indicate that the connect has failed.
-					if (this.connectOptions.mqttVersion === 4 && this.connectOptions.mqttVersionExplicit === false) {
+					// Otherwise we never had a connection, so indicate that the connect has failed.
+					if (this.connectOptions.mqttVersion === 5 && this.connectOptions.mqttVersionExplicit === false) {
+						this._trace("Failed to connect V5, dropping back to V4");
+						this.connectOptions.mqttVersion = 4;
+						if (this.connectOptions.uris) {
+							this.hostIndex = 0;
+							this._doConnect(this.connectOptions.uris[0]);
+						} else {
+							this._doConnect(this.uri);
+						}
+					} else if (this.connectOptions.mqttVersion === 4 && this.connectOptions.mqttVersionExplicit === false) {
 						this._trace("Failed to connect V4, dropping back to V3");
 						this.connectOptions.mqttVersion = 3;
 						if (this.connectOptions.uris) {
@@ -1951,13 +2088,13 @@ function onMessageArrived(message) {
 				if (connectOptions.keepAliveInterval === undefined)
 					connectOptions.keepAliveInterval = 60;
 
-				if (connectOptions.mqttVersion > 4 || connectOptions.mqttVersion < 3) {
+				if (connectOptions.mqttVersion > 5 || connectOptions.mqttVersion < 3) {
 					throw new Error(format(ERROR.INVALID_ARGUMENT, [connectOptions.mqttVersion, "connectOptions.mqttVersion"]));
 				}
 
 				if (connectOptions.mqttVersion === undefined) {
 					connectOptions.mqttVersionExplicit = false;
-					connectOptions.mqttVersion = 4;
+					connectOptions.mqttVersion = 5;
 				} else {
 					connectOptions.mqttVersionExplicit = true;
 				}
@@ -2380,6 +2517,11 @@ function onMessageArrived(message) {
 					enumerable: true,
 					get: function() { return duplicate; },
 					set: function(newDuplicate) {duplicate=newDuplicate;}
+				},
+				"properties":{
+					enumerable: true,
+					get: function() { return properties; },
+					set: function(newProperties) {properties=newProperties;}
 				}
 			});
 		};

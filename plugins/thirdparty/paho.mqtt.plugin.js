@@ -138,10 +138,20 @@
             // Try to parse as JSON message, if failed revert to plain text
 	    data={};
 	    try {
-                data[message.destinationName] = JSON.parse( message.payloadString )
+                data[message.destinationName] = JSON.parse( message.payloadString );
+		if (!(data[message.destinationName] && typeof data[message.destinationName] === "object")) {
+			data[message.destinationName] = { 'payload' : message.payloadString };
+		}
             } catch(err) {
-                data[message.destinationName] = message.payloadString
+                data[message.destinationName] = { 'payload' : message.payloadString};
             }
+            if ('userProperties' in message.properties) {
+		// add user properties
+		for (const [key, value] of Object.entries(message.properties.userProperties)) {
+			data[message.destinationName][key]=value;
+		}
+	    }
+
 	    updateCallback( data );
         };
 

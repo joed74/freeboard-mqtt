@@ -932,7 +932,11 @@
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (settingName == "value") {
-                isOn = Boolean(newValue);
+                if (isNaN(newValue)) {
+			isOn = Boolean(newValue);
+		} else {
+			isOn = Boolean(Number(newValue));
+		}
             }
             if (settingName == "on_text") {
                 onText = newValue;
