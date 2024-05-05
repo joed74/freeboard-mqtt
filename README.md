@@ -1,31 +1,26 @@
-freeboard
-==========
+freeboard-mqtt
+==============
 
 **free·board** (noun) *\ˈfrē-ˌbȯrd\*
 
 1. the distance between the waterline and the main deck or weather deck of a ship or between the level of the water and the upper edge of the side of a small boat.
 2. the act of freeing data from below the "waterline" and exposing it to the world.
-3. a damn-sexy, open source real-time dashboard builder/viewer for IOT and other web mashups.
-
-### Demo
-http://freeboard.github.io/freeboard
-
-https://freeboard.io
+3. a open source real-time dashboard builder/viewer for mqtt data.
 
 ### Screenshots
-![Weather](https://raw.github.com/Freeboard/branding/master/screenshots/freeboard-screenshot-1.jpg)
+tbd
 
 ### What is It?
 
 Freeboard is a turn-key HTML-based "engine" for dashboards. Besides a nice looking layout engine, it provides a plugin architecture for creating datasources (which fetch data) and widgets (which display data)— freeboard then does all the work to connect the two together. Another feature of freeboard is its ability to run entirely in the browser as a single-page static web app without the need for a server. The feature makes it extremely attractive as a front-end for embedded devices which may have limited ability to serve complex and dynamic web pages.
 
-The code here is the client-side portion of what you see when you visit a freeboard at http://freeboard.io. It does not include any of the server-side code for user management, saving to a database or public/private functionality— this is left up to you to implement should you want to use freeboard as an online service.
+It does not include any code for user management, saving to a database or public/private functionality— this is left up to you to implement should you want to use freeboard as an online service.
 
 ### How to Use
 
-Freeboard can be run entirely from a local hard drive. Simply download/clone the repository and open index.html. When using Chrome, you may run into issues with CORS when accessing JSON based APIs if you load from your local hard-drive— in this case you can switch to using JSONP or load index.html and run from a local or remote web server.
+Freeboard can be run entirely from a local hard drive. Simply download/clone the repository and open index-dev.html. When using Chrome, you may run into issues with CORS when accessing JSON based APIs if you load from your local hard-drive— in this case you can switch to using JSONP or load index.html and run from a local or remote web server.
 
-1. git clone https://github.com/Freeboard/freeboard.git
+1. git clone https://github.com/joed74/freeboard-mqtt/freeboard.git
 2. cd freeboard
 3. npm install
 4. grunt
