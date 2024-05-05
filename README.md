@@ -20,7 +20,7 @@ It does not include any code for user management, saving to a database or public
 
 Freeboard can be run entirely from a local hard drive. Simply download/clone the repository and open index-dev.html. When using Chrome, you may run into issues with CORS when accessing JSON based APIs if you load from your local hard-drive— in this case you can switch to using JSONP or load index.html and run from a local or remote web server.
 
-1. git clone https://github.com/joed74/freeboard-mqtt/freeboard.git
+1. git clone https://github.com/joed74/freeboard-mqtt.git
 2. cd freeboard
 3. npm install
 4. grunt
