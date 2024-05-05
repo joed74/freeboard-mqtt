@@ -3,7 +3,7 @@
 
     freeboard.loadWidgetPlugin({
         type_name: "picture_indicator",
-        display_name: "Picture Indicatior",
+        display_name: "Picture Indicator",
         description : "Indicator which displays pictures for values",
         settings: [
             {
