@@ -19246,9 +19246,9 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 	var $window = $(window);
 	var isTouch = !!('ontouchstart' in window);
 	var pointer_events = {
-		start: isTouch ? 'touchstart.gridster-draggable' : 'mousedown.gridster-draggable',
-		move : isTouch ? 'touchmove.gridster-draggable' : 'mousemove.gridster-draggable',
-		end  : isTouch ? 'touchend.gridster-draggable' : 'mouseup.gridster-draggable'
+		start: 'touchstart.gridster-draggable mousedown.gridster-draggable',
+		move : 'touchmove.gridster-draggable mousemove.gridster-draggable',
+		end  : 'touchend.gridster-draggable mouseup.gridster-draggable'
 	};
 
 	/**
@@ -19335,7 +19335,7 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 
 	fn.get_mouse_pos = function(e)
 	{
-		if(isTouch)
+		if(e.originalEvent && e.originalEvent.touches)
 		{
 			var oe = e.originalEvent;
 			e = oe.touches.length ? oe.touches[0] : oe.changedTouches[0];
@@ -22175,7 +22175,6 @@ new a.w;var b=new a.Ba;0<b.Rb&&a.La(b);a.b("jqueryTmplTemplateEngine",a.Ba)})()}
 		{
 			styles += (opts.namespace + ' [data-sizex="' + x + '"] { width:' + (x * opts.widget_base_dimensions[0] + (x - 1) * (opts.widget_margins[0] * 2)) + 'px;}');
 		}
-		this.remove_style_tags();
 		return this.add_style_tag(styles);
 	};
 
