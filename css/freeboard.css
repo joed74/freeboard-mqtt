@@ -2165,7 +2165,7 @@ html {
 body {
 	background-color: #101214;
 	color: #8b8b8b;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: Arial, sans-serif;
 	font-size: 14px;
 	line-height: 20px;
 	height: 100%;
@@ -2711,7 +2711,7 @@ header h1 {
 	color: #d3d4d4;
 	font-size: 20px;
 	font-weight: 100;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: Arial, sans-serif;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	letter-spacing: 1px;
@@ -3656,7 +3656,7 @@ ul.datasource-input-suffix {
 }
 
 .title {
-	font-family: 'Helvetica-Neue', 'Helvetica', 'Arial', sans-serif;
+	font-family: 'Arial', sans-serif;
 	vertical-align: baseline;
 	-webkit-font-smoothing: antialiased;
 	font-style: normal;

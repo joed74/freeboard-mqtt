@@ -2732,7 +2732,7 @@ var freeboard = (function()
 
 	var currentStyle = {
 		values: {
-			"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", sans-serif',
+			"font-family": '"Arial Light Regular", sans-serif',
 			"color"      : "#d3d4d4",
 			"font-weight": 100
 		}
