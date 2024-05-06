@@ -2373,6 +2373,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 	this.processSizeChange = function () {
 		if (!_.isUndefined(self.widgetInstance) && _.isFunction(self.widgetInstance.onSizeChanged)) {
 			self.widgetInstance.onSizeChanged();
+			self._heightUpdate.valueHasMutated();
 		}
 	}
 
@@ -2387,7 +2388,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 				var rawValue = self.settings()[settingName];
 
 				// If there is a reference error and the value just contains letters and numbers, then
-				if (e instanceof ReferenceError && (/^\w+$/).test(rawValue)) {
+				if (e instanceof ReferenceError && (/^[\w\\<>\(\)\.,:!? ]+$/gm).test(rawValue)) {
 					returnValue = rawValue;
 				}
 			}
@@ -2439,7 +2440,7 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 						valueFunction = new Function("datasources", script);
 					}
 					catch (e) {
-						var literalText = currentSettings[settingDef.name].replace(/"/g, '\\"').replace(/[\r\n]/g, ' \\\n');
+						var literalText = currentSettings[settingDef.name].replace(/"/g, '\\"').replace(/[\r\n]/g, '\\n');
 
 						// If the value function cannot be created, then go ahead and treat it as literal text
 						valueFunction = new Function("datasources", "return \"" + literalText + "\";");
@@ -3652,18 +3653,16 @@ $.extend(freeboard, jQuery.eventEmitter);
 	freeboard.addStyle('.tw-unit',
 		'display: inline-block;' +
 		'padding-left: 10px;' +
-		'padding-bottom: 1.1em;' +
-		'vertical-align: bottom;');
+		'vertical-align: top;');
 
 	freeboard.addStyle('.tw-value-wrapper',
 		'position: relative;' +
-		'vertical-align: middle;' +
 		'height:100%;');
 
         freeboard.addStyle('.tw-time',
 		'position: absolute;'+
                 'bottom: 0; right: 0;'+
-                'margin-bottom: 2px;'+
+                'margin-bottom: 1px;'+
                 'font-size: xx-small');
 
 	freeboard.addStyle('.tw-sparkline',
@@ -3679,7 +3678,8 @@ $.extend(freeboard, jQuery.eventEmitter);
         var valueElement = $('<div class="tw-value"></div>');
         var unitsElement = $('<div class="tw-unit"></div>');
 	var timeElement = $('<div class="tw-time"></div>');
-        var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
+	var valueWrapper = $('<div class="tw-value-wrapper tw-td"></div>');
+	var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
 
 		function updateValueSizing()
 		{
@@ -3698,11 +3698,10 @@ $.extend(freeboard, jQuery.eventEmitter);
 
 			$(displayElement)
 				.append($('<div class="tw-tr"></div>').append(titleElement))
-				.append($('<div class="tw-tr"></div>').append($('<div class="tw-value-wrapper tw-td"></div>').append(valueElement).append(unitsElement).append(timeElement)))
+				.append($('<div class="tw-tr"></div>').append($(valueWrapper).append(valueElement).append(unitsElement).append(timeElement)))
 				.append($('<div class="tw-tr"></div>').append(sparklineElement));
 
 			$(element).append(displayElement);
-
 			updateValueSizing();
         }
 
@@ -3758,18 +3757,19 @@ $.extend(freeboard, jQuery.eventEmitter);
                         }
 
 			var valueFontSize = 30;
+		        var unitPadding = "0.3em";
 
-			if(newSettings.size == "big")
-			{
-				valueFontSize = 75;
-
-				if(newSettings.sparkline)
-				{
-					valueFontSize = 60;
-				}
+			if(newSettings.size == "big") {
+				valueFontSize = 60;
+				unitPadding = "1.2em";
+			}
+			if(newSettings.size == "small") {
+				valueFontSize = 18;
+				unitPadding = "0.05em";
 			}
 
-			valueElement.css({"font-size" : valueFontSize + "px"});
+			valueElement.css({"font-size" : valueFontSize + "px", "white-space" : "pre"});
+			if (shouldDisplayUnits) unitsElement.css({ "padding-top" : unitPadding });
 
 			updateValueSizing();
         }
@@ -3784,10 +3784,15 @@ $.extend(freeboard, jQuery.eventEmitter);
 
 		if (isFinite(newValue))
 		{
+		    // number
 		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!=="")
 		    {
 			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
 		    }
+		}
+		else
+		{
+		    // text
 		}
 
                 if (currentSettings.animate) 
@@ -3825,11 +3830,32 @@ $.extend(freeboard, jQuery.eventEmitter);
         }
 
         this.getHeight = function () {
-            if (currentSettings.size == "big" || currentSettings.sparkline) {
-                return 2;
+	    var lines=valueElement.text().replace(/\r\n$|\r$|\n$/,"").split(/\r\n|\r|\n/).length;
+	    var fontSize = 30;
+	    if (currentSettings.size == "big") fontSize=60;
+	    if (currentSettings.size == "small") fontSize=18;
+	    var calcHeight = 8+Math.ceil(lines * fontSize * 1.14); // 1.14 = normal line-height, 8 = margin top/bottom
+
+	    if (lines>1) {
+	       var hasTitle = (!_.isUndefined(currentSettings.title) && currentSettings.title != "");
+	       if (hasTitle) calcHeight += 17;
+	       var hasTime = (!_.isUndefined(currentSettings.time) && currentSettings.time != "");
+	       if (hasTime) calcHeight += 11;
+	    }
+
+	    calcHeight = Math.ceil(calcHeight/60)-1;
+
+	    if (lines==1) {
+		    valueWrapper.css({ "vertical-align" : "middle" });
+	    } else {
+		    valueWrapper.css({ "vertical-align" : "top" });
+	    }
+
+            if (currentSettings.sparkline) {
+                return 2+calcHeight;
             }
             else {
-                return 1;
+                return 1+calcHeight;
             }
         }
 
@@ -3860,7 +3886,11 @@ $.extend(freeboard, jQuery.eventEmitter);
                     {
                         name: "Big",
                         value: "big"
-                    }
+                    },
+		    {
+			name: "Small",
+			value: "small"
+	            }
                 ]
             },
             {
