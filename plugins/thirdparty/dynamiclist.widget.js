@@ -100,7 +100,7 @@
                     }
                     var picElement = $('<div class="pic" style="width: 50px;height: 50px;float:left;margin-top:-5px;margin-right:10px;"><img src="' + picname + '" class="svg-convert" width="100%" height="100%" id="' + listObject[i].type + '"></div>');
 
-                    var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content;">' + listObject[i].display_name + '</div>');
+                    var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content; font-size: large; color: #d3d4d4; font-weight: 100">' + listObject[i].display_name + '</div>');
 
                     const date = new Date(listObject[i].time);
 		    const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);

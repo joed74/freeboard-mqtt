@@ -2732,7 +2732,7 @@ var freeboard = (function()
 
 	var currentStyle = {
 		values: {
-			"font-family": '"Arial Light Regular", sans-serif',
+			"font-family": '"Arial", sans-serif',
 			"color"      : "#d3d4d4",
 			"font-weight": 100
 		}
