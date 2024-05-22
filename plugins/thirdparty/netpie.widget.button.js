@@ -3,7 +3,14 @@
 /*  More information about NETPIE please visit https://netpie.io  */
 
 (function() {
-    var bcolor = {red:["#FFF","#e74c3c"],green:["#FFF","#2ecc71"],blue:["#FFF","#3498db"],yellow:["#FFF","#f1c40f"],white:["#454545","#ecf0f1"],grey:["#FFF","#bdc3c7"],dark:["#FFF","#3d3d3d"]};
+    var bcolor = { red:    ["#FFFFFF","#e74c3c"],
+	           green:  ["#FFFFFF","#2ecc71"],
+	           blue:   ["#FFFFFF","#3498db"],
+	           yellow: ["#FFFFFF","#f1c40f"],
+	           white:  ["#454545","#ecf0f1"],
+	           grey:   ["#FFFFFF","#bdc3c7"],
+	           dark:   ["#FFFFFF","#3d3d3d"]
+                 };
 
     $('head').append('<link href="plugins/thirdparty/netpie.widget.button.css" rel="stylesheet" />');
 
@@ -187,20 +194,37 @@
 	self.widgetID2 = makeid(16);
 	self.widgetID3 = makeid(16);
 
+	self.flash = function(e, color) {
+	    if (color=="white") {
+	       e.currentTarget.style.color="white";
+	       e.currentTarget.style.backgroundColor="#bdc3c7";
+	    } else {
+	       e.currentTarget.style.color="black";
+               e.currentTarget.style.backgroundColor="white";
+	    }
+	    setTimeout(() => {
+               e.currentTarget.style.color=bcolor[color][0];
+	       e.currentTarget.style.backgroundColor=bcolor[color][1];
+	    }, 150);
+	}
+
 	self.onClick = function(e) {
 	    e.preventDefault();
+	    self.flash(e, currentSettings.color);
     	    var f=new Function(currentSettings.onClick);
 	    return(f(self));
 	}
 
 	self.onClick2 = function(e) {
             e.preventDefault();
+            self.flash(e, currentSettings.color2);
 	    var f=new Function(currentSettings.onClick2);
 	    return(f(self));
 	}
 
 	self.onClick3 = function(e) {
             e.preventDefault();
+            self.flash(e, currentSettings.color3);
 	    var f=new Function(currentSettings.onClick3);
 	    return(f(self));
 	}
@@ -269,7 +293,7 @@
 				buttonElement3.css({"width" : width+"%","font-size" : fsize+"%"});
 				lastbutton=buttonElement3;
 				$(containerElement).append(buttonElement3);
-			}			
+			}
 			lastbutton.css({"margin-right" : "10px"});
 
 			$(containerElement).append(textElement);
