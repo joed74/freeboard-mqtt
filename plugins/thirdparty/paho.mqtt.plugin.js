@@ -84,6 +84,8 @@
 
 		var clientid = currentSettings.client_id+'_'+Math.floor(Math.random()*100000)+1;
 		try {
+			data['connected'] = false;
+			updateCallback(data);
 			let host=currentSettings.server.replace("%HOST%",location.host);
 			client = new Paho.Client(host, clientid);
 			console.log( "Attempting connection to "+host );
@@ -124,12 +126,15 @@
 			catch (e) {
 			}
             // update the data to main to populate the topics list there
-            updateCallback( data );
+	    data['connected'] = true;
+	    updateCallback( data );
         };
 
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0)
                 console.log("onConnectionLost:"+responseObject.errorMessage);
+	    data['connected'] = false;
+	    updateCallback( data );
         };
 
         function onMessageArrived(message) {

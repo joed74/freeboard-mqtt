@@ -2773,6 +2773,7 @@ ul, ol {
 
 .gridster .gs_w {
 	background: #2a2a2a;
+	border-radius: 5px;
 	padding: 0px;
 	margin: 0px;
 	overflow: hidden;
