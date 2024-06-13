@@ -102,7 +102,7 @@ if (typeof globalStore === "undefined") {
                 "display_name"  : "Enable",
 		"type"          : "calculated",
 		"default_value" : true,
-		"description"   : "Enable / disable widget"
+		"description"   : "Disables widget if set to 'false' or '0'"
 	    },
 	    {
                 "name"          : "autovaluesource",

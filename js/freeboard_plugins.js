@@ -3781,7 +3781,6 @@ $.extend(freeboard, jQuery.eventEmitter);
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (settingName == "value") {
-
 		if (isFinite(newValue))
 		{
 		    // number
@@ -3792,7 +3791,8 @@ $.extend(freeboard, jQuery.eventEmitter);
 		}
 		else
 		{
-		    // text
+		    // if its not text -> ignore
+		    if (!(typeof newValue === 'string' || newValue instanceof String)) return;
 		}
 
                 if (currentSettings.animate) 
@@ -3822,6 +3822,17 @@ $.extend(freeboard, jQuery.eventEmitter);
 		{
   		   timeElement.text(dv.toLocaleTimeString());
 		}
+	    }
+	    if (settingName == "enable") {
+                var widget = displayElement[0].parentElement;
+		                if (newValue===false || newValue===0 || newValue==="0") {
+                        widget.style.pointerEvents="none";
+                        widget.classList.add("disconnected");
+                }
+                else {
+                        widget.style.pointerEvents="inherit";
+                        widget.classList.remove("disconnected");
+                }
 	    }
 	}
 
@@ -3893,6 +3904,13 @@ $.extend(freeboard, jQuery.eventEmitter);
 	            }
                 ]
             },
+            {
+                name: "enable",
+		display_name: "Enable",
+		type: "calculated",
+		default_value: true,
+		description: "Shows disconnect icon if set to 'false' or '0'"
+	    },
             {
                 name: "value",
                 display_name: "Value",
