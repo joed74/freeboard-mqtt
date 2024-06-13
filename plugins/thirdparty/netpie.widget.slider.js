@@ -98,7 +98,13 @@ if (typeof globalStore === "undefined") {
                 "default_value" : "0",
                 "description"   : "The default value set only the first time the widget is loaded."
             },                      
-            {
+            {   "name"          : "enable",
+                "display_name"  : "Enable",
+		"type"          : "calculated",
+		"default_value" : true,
+		"description"   : "Enable / disable widget"
+	    },
+	    {
                 "name"          : "autovaluesource",
                 "display_name"  : "Auto Updated Value",
                 "type"          : "calculated",
@@ -172,10 +178,6 @@ if (typeof globalStore === "undefined") {
             if (bcolor[color]) {
                 if (document.getElementById(self.widgetID)) {
                     sliderObject[self.widgetID].setFillColor(bcolor[color][1]);
-                    /*
-                    var c = hexToRgb(bcolor[color][1]);
-                    sliderObject[self.widgetID].setBackgroundColor('rgba('+c.r+','+c.g+','+c.b+',0.14)');
-                    */
                 }
             }
         }
@@ -291,6 +293,17 @@ if (typeof globalStore === "undefined") {
                     valueElement.text(sliderObject[self.widgetID].value);
                 }
             }
+	    if (settingName == "enable") {
+		var widget  = sliderObject[self.widgetID].element.parentElement;
+		if (newValue===false || newValue===0 || newValue==="0") {
+			widget.style.pointerEvents="none";
+			widget.classList.add("disconnected");
+		}
+		else {
+			widget.style.pointerEvents="inherit";
+			widget.classList.remove("disconnected");
+		}
+	    }
         }
 
         self.onDispose = function() {
