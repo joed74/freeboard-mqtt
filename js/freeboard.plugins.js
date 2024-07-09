@@ -590,7 +590,7 @@
 
                         if (shouldDisplayTime)
                         {
-                                timeElement.html((_.isUndefined(newSettings.time) ? "" : newSettings.time));
+                                timeElement.html("");
 				timeElement.attr("style", null);
 			}
                         else
