@@ -2429,6 +2429,9 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 						script = "[" + script.join(",") + "]";
 					}
 
+					// if its a single boolean, convert it to string
+					if (typeof script==="boolean") script=script.toString();
+
 					// If there is no return, add one
 					if ((script.match(/;/g) || []).length <= 1 && script.indexOf("return") == -1) {
 						script = "return " + script;

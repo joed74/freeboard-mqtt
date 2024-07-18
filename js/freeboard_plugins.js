@@ -2429,6 +2429,9 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 						script = "[" + script.join(",") + "]";
 					}
 
+					// if its a single boolean, convert it to string
+					if (typeof script==="boolean") script=script.toString();
+
 					// If there is no return, add one
 					if ((script.match(/;/g) || []).length <= 1 && script.indexOf("return") == -1) {
 						script = "return " + script;
@@ -3671,15 +3674,35 @@ $.extend(freeboard, jQuery.eventEmitter);
     var textWidget = function (settings) {
 
         var self = this;
-
+	var value = null;
+	var intervalID = null;
         var currentSettings = settings;
-		var displayElement = $('<div class="tw-display"></div>');
-		var titleElement = $('<h2 class="section-title tw-title tw-td"></h2>');
+	var displayElement = $('<div class="tw-display"></div>');
+	var titleElement = $('<h2 class="section-title tw-title tw-td"></h2>');
         var valueElement = $('<div class="tw-value"></div>');
         var unitsElement = $('<div class="tw-unit"></div>');
 	var timeElement = $('<div class="tw-time"></div>');
 	var valueWrapper = $('<div class="tw-value-wrapper tw-td"></div>');
 	var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
+	if (_.isUndefined(currentSettings.updaterate)) currentSettings.updaterate="onchange";
+
+	updateSparkline = function() {
+	   //if (!Array.isArray(value)) return;
+	   //if (value.some(isNaN)) return;
+	   addValueToSparkline(sparklineElement, value);
+	}
+
+	updateInterval = function(rate) {
+		if (intervalID) {
+			clearInterval(intervalID);
+			intervalID=null;
+		}
+		if (currentSettings.updaterate=="1s") intervalID=setInterval(updateSparkline, 1000);
+		if (currentSettings.updaterate=="10s") intervalID=setInterval(updateSparkline, 10000);
+		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
+		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
+	}
+	 
 
 		function updateValueSizing()
 		{
@@ -3715,12 +3738,14 @@ $.extend(freeboard, jQuery.eventEmitter);
 			if(newSettings.sparkline)
 			{
 				sparklineElement.attr("style", null);
+				updateInterval(newSettings.updaterate);
 			}
 			else
 			{
 				delete sparklineElement.data().values;
 				sparklineElement.empty();
 				sparklineElement.hide();
+				updateInterval("onchange");
 			}
 
 			if(shouldDisplayTitle)
@@ -3806,7 +3831,8 @@ $.extend(freeboard, jQuery.eventEmitter);
 
                 if (currentSettings.sparkline) 
 		{
-                    addValueToSparkline(sparklineElement, newValue);
+		    value = newValue;
+		    if (currentSettings.updaterate=="onchange") updateSparkline();
                 }
             }
             if (settingName == "time") {
@@ -3927,11 +3953,39 @@ $.extend(freeboard, jQuery.eventEmitter);
                 display_name: "Include Sparkline",
                 type: "boolean"
             },
+	    {
+		name: "updaterate",
+		display_name: "Update rate of Sparkline",
+		default_value: "onchange",
+		type: "option",
+		options: [
+		    {
+		        name: "upon change",
+			value: "onchange"
+		    },
+		    {
+			name: "every second",
+			value: "1s"
+		    },
+		    {
+			name: "every 10 seconds",
+			value: "10s"
+		    },
+		    {
+			name: "every 30 seconds",
+			valie: "30s"
+		    },
+		    {
+			name: "every minute",
+			value: "1m"
+		    }
+		]
+	    },
             {
                 name: "animate",
                 display_name: "Animate Value Changes",
                 type: "boolean",
-                default_value: true
+                default_value: false
             },
             {
                 name: "time",
@@ -4063,12 +4117,35 @@ $.extend(freeboard, jQuery.eventEmitter);
 	freeboard.addStyle('.sparkline', "width:100%;height: 75px;");
     var sparklineWidget = function (settings) {
         var self = this;
-
+	var value = null;
+	var intervalID = null;
         var titleElement = $('<h2 class="section-title"></h2>');
         var sparklineElement = $('<div class="sparkline"></div>');
-		var sparklineLegend = $('<div></div>');
-		var currentSettings = settings;
+	var sparklineLegend = $('<div></div>');
+	var currentSettings = settings;
+	if (_.isUndefined(currentSettings.updaterate)) currentSettings.updaterate="onchange";
 
+	updateSparkline = function() {
+	   if (!Array.isArray(value)) return;
+	   if (value.some(isNaN)) return;
+	   if (currentSettings.legend) {
+	       addValueToSparkline(sparklineElement, value, currentSettings.legend.split(","));
+	   } else {
+	       addValueToSparkline(sparklineElement, value);
+	   }
+	}
+
+	updateInterval = function(rate) {
+		if (intervalID) {
+			clearInterval(intervalID);
+			intervalID=null;
+		}
+		if (currentSettings.updaterate=="1s") intervalID=setInterval(updateSparkline, 1000);
+		if (currentSettings.updaterate=="10s") intervalID=setInterval(updateSparkline, 10000);
+		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
+		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
+	}
+	 
         this.render = function (element) {
             $(element).append(titleElement).append(sparklineElement).append(sparklineLegend);
         }
@@ -4080,17 +4157,17 @@ $.extend(freeboard, jQuery.eventEmitter);
 			if(newSettings.include_legend) {
 				addSparklineLegend(sparklineLegend,  newSettings.legend.split(","));
 			}
+			updateInterval(newSettings.updaterate);
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
-			if (currentSettings.legend) {
-				addValueToSparkline(sparklineElement, newValue, currentSettings.legend.split(","));
-			} else {
-				addValueToSparkline(sparklineElement, newValue);
-			}
+		value=newValue;
+		if (currentSettings.updaterate=="onchange") updateSparkline();
         }
 
         this.onDispose = function () {
+		if (intervalID) clearInterval(intervalID);
+		intervalID=null;
         }
 
         this.getHeight = function () {
@@ -4121,6 +4198,34 @@ $.extend(freeboard, jQuery.eventEmitter);
                 display_name: "Title",
                 type: "text"
             },
+	    {
+		name: "updaterate",
+		display_name: "Update",
+		default_value: "onchange",
+		type: "option",
+		options: [
+		    {
+		        name: "upon change",
+			value: "onchange"
+		    },
+		    {
+			name: "every second",
+			value: "1s"
+		    },
+		    {
+			name: "every 10 seconds",
+			value: "10s"
+		    },
+		    {
+			name: "every 30 seconds",
+			valie: "30s"
+		    },
+		    {
+			name: "every minute",
+			value: "1m"
+		    }
+		]
+	    },
             {
                 name: "value",
                 display_name: "Value",
