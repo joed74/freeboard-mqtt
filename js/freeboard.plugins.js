@@ -521,6 +521,8 @@
 	var titleElement = $('<h2 class="section-title tw-title tw-td"></h2>');
         var valueElement = $('<div class="tw-value"></div>');
         var unitsElement = $('<div class="tw-unit"></div>');
+	var value2Element = $('<div class="tw-value"></div>');
+	var unit2Element = $('<div class="tw-unit"></div>');
 	var timeElement = $('<div class="tw-time"></div>');
 	var valueWrapper = $('<div class="tw-value-wrapper tw-td"></div>');
 	var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
@@ -561,7 +563,7 @@
 
 			$(displayElement)
 				.append($('<div class="tw-tr"></div>').append(titleElement))
-				.append($('<div class="tw-tr"></div>').append($(valueWrapper).append(valueElement).append(unitsElement).append(timeElement)))
+				.append($('<div class="tw-tr"></div>').append($(valueWrapper).append(valueElement).append(unitsElement).append(value2Element).append(unit2Element).append(timeElement)))
 				.append($('<div class="tw-tr"></div>').append(sparklineElement));
 
 			$(element).append(displayElement);
@@ -573,7 +575,9 @@
 
 			var shouldDisplayTitle = (!_.isUndefined(newSettings.title) && newSettings.title != "");
 			var shouldDisplayUnits = (!_.isUndefined(newSettings.units) && newSettings.units != "");
+		        var shouldDisplaySecondUnit = (!_.isUndefined(newSettings.secondunit) && !_.isUndefined(newSettings.showsecondunit) && newSettings.showsecondunit == true && newSettings.secondunit != "");
                         var shouldDisplayTime =  (!_.isUndefined(newSettings.time) && newSettings.time != "");
+			var shouldDisplaySecondValue = (!_.isUndefined(newSettings.showsecondunit) && newSettings.showsecondunit == true);
 
 			if(newSettings.sparkline)
 			{
@@ -610,6 +614,27 @@
 				unitsElement.hide();
 			}
 
+			if (shouldDisplaySecondUnit)
+			{
+				unit2Element.html((_.isUndefined(newSettings.secondunit) ? "" : newSettings.secondunit));
+				unit2Element.attr("style", null);
+			}
+			else
+			{
+				unit2Element.empty();
+				unit2Element.hide();
+			}
+
+			if (shouldDisplaySecondValue)
+			{
+				value2Element.show();
+			}
+			else
+			{
+				value2Element.empty();
+				value2Element.hide();
+			}
+
                         if (shouldDisplayTime)
                         {
                                 timeElement.html("");
@@ -634,7 +659,9 @@
 			}
 
 			valueElement.css({"font-size" : valueFontSize + "px", "white-space" : "pre"});
+		        value2Element.css({"font-size" : valueFontSize + "px", "white-space" : "pre", "padding-left" : "15px"});
 			if (shouldDisplayUnits) unitsElement.css({ "padding-top" : unitPadding });
+		        if (shouldDisplaySecondUnit) unit2Element.css({ "padding-top" : unitPadding });
 
 			updateValueSizing();
         }
@@ -646,12 +673,18 @@
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (settingName == "value") {
+		var newValue2;
 		if (isFinite(newValue))
 		{
 		    // number
+		    if (currentSettings.showsecondunit)
+		    {
+			newValue2=new Function('return '+ currentSettings.secondunitconv.replace("%value%", newValue))();
+		    }
 		    if (currentSettings.decimalplaces!==undefined && currentSettings.decimalplaces!=="")
 		    {
 			newValue=parseFloat(newValue).toFixed(currentSettings.decimalplaces);
+			if (newValue2) newValue2=parseFloat(newValue2).toFixed(currentSettings.decimalplaces);
 		    }
 		}
 		else
@@ -663,10 +696,12 @@
                 if (currentSettings.animate) 
 		{
                     easeTransitionText(newValue, valueElement, 500);
+		    if (newValue2) easeTransitionText(newValue2, value2Element, 500);
                 }
                 else 
 		{
 	    	    valueElement.text(newValue);
+		    if (newValue2) value2Element.text(newValue2);
                 }
 
                 if (currentSettings.sparkline) 
@@ -837,7 +872,25 @@
                 name: "units",
                 display_name: "Units",
                 type: "text"
-            }
+            },
+	    {
+		name: "showsecondunit",
+		display_name: "Show Value With Second Unit",
+		type: "boolean",
+		default_value: false
+	    },
+	    {
+		name: "secondunitconv",
+		display_name: "Conversion For Second Unit",
+		type: "text",
+		default_value: "%value%",
+		description: "calculation for second unit, e.g. %value%*3.6"
+	    },
+	    {
+		name: "secondunit",
+		display_name: "Second Unit",
+		type: "text"
+	    }
         ],
         newInstance: function (settings, newInstanceCallback) {
             newInstanceCallback(new textWidget(settings));
