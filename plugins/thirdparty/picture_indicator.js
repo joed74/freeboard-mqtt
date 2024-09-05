@@ -89,10 +89,9 @@
 	    }
 
             if (settingName == "time") {
-                const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
 		let dv=new Date(newValue);
                 if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-                let dd=dayOfYear(new Date())-dayOfYear(dv);
+                let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(dv);
 		if (dd>0)
                 {
                    timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());

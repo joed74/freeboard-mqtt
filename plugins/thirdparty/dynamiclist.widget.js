@@ -103,8 +103,7 @@
                     var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content; font-size: large; color: #d3d4d4; font-weight: 100">' + listObject[i].display_name + '</div>');
 
                     const date = new Date(listObject[i].time);
-		    const dayOfYear = date =>  Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-		    let dd=dayOfYear(new Date())-dayOfYear(date);
+		    let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(date);
 		    let timestr;
 		    if (dd>0) 
 		    {
