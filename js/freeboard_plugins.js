@@ -4410,8 +4410,8 @@ $.extend(freeboard, jQuery.eventEmitter);
         }
 
         this.onSettingsChanged = function (newSettings) {
-			currentsettings = newSettings
-			fillPaper(paper);
+		currentsettings = newSettings
+		fillPaper(paper);
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
@@ -4422,8 +4422,7 @@ $.extend(freeboard, jQuery.eventEmitter);
 		    newValue=Math.trunc(newValue);
                     if (oppositeCurrent < newValue) direction="1";
 		    if (currentsettings.labels) newValue+=50;
-
-		    if (newValue!=currentValue)
+		    if (newValue!==currentValue)
 			    pointer.animate({transform: direction + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
 		    currentValue = newValue;
 		}
