@@ -926,7 +926,9 @@
                 max: (_.isUndefined(currentSettings.max_value) ? 0 : currentSettings.max_value),
                 label: currentSettings.units,
                 showInnerShadow: false,
-                valueFontColor: "#d3d4d4"
+                valueFontColor: "#d3d4d4",
+		valueMinFontSize: 25,
+		decimals: (_.isUndefined(currentSettings.decimalplaces) ? 0 : currentSettings.decimalplaces)
             });
         }
 
@@ -937,7 +939,7 @@
         }
 
         this.onSettingsChanged = function (newSettings) {
-            if (newSettings.min_value != currentSettings.min_value || newSettings.max_value != currentSettings.max_value || newSettings.units != currentSettings.units) {
+            if (newSettings.min_value != currentSettings.min_value || newSettings.max_value != currentSettings.max_value || newSettings.units != currentSettings.units || newSettings.decimalplaces != currentSettings.decimalplaces) {
                 currentSettings = newSettings;
                 createGauge();
             }
@@ -950,7 +952,7 @@
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
             if (!_.isUndefined(gaugeObject)) {
-                gaugeObject.refresh(Number(newValue));
+		gaugeObject.refresh(Number(newValue));
             }
         }
 
@@ -969,7 +971,7 @@
         display_name: "Gauge",
         "external_scripts" : [
             "plugins/thirdparty/raphael.2.1.0.min.js",
-            "plugins/thirdparty/justgage.1.0.1.js"
+            "plugins/thirdparty/justgage.1.7.0.js"
         ],
         settings: [
             {
@@ -982,6 +984,12 @@
                 display_name: "Value",
                 type: "calculated"
             },
+	    {
+	        name: "decimalplaces",
+		display_name: "Decimal Places",
+		type: "number",
+		description: "if value is numeric, format it with this parameter",
+	    },
             {
                 name: "units",
                 display_name: "Units",
@@ -1150,20 +1158,8 @@
         var pointer;
         var width, height;
         var currentValue = 0;
-        var valueDiv = $('<div class="widget-middle-text"></div>');
+        var valueDiv = $('<div class="widget-middle-text" style="font-size: 42px; margin-right: 3px;"></div>');
         var unitsDiv = $('<div></div>');
-
-		function countDecimals(value) {
-		    if (Math.floor(value) === value) return 0;
-
-			var str = value.toString();
-			if (str.indexOf(".") !== -1 && str.indexOf("-") !== -1) {
-				return str.split("-")[1] || 0;
-			} else if (str.indexOf(".") !== -1) {
-				return str.split(".")[1].length || 0;
-			}
-			return str.split("-")[1] || 0;
-		}
 
         function polygonPath(points) {
             if (!points || points.length < 2)
@@ -1227,7 +1223,6 @@
 					txtRight.attr("fill", "#FF9900");
 				}
 				pointer.attr("stroke-width",0);
-				pointer.hide();
 			} else {
 				radius = Math.min(width, height) / 2 - strokeWidth * 2;
 				var circle = paper.circle(width / 2, height / 2, radius);
@@ -1237,6 +1232,7 @@
 			}
         	        pointer.attr("fill", "#fff");
 			unitsDiv.html(currentsettings.units);
+			currentValue="";
 		}
 
         this.render = function (element) {
@@ -1255,34 +1251,33 @@
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
-			if (settingName == "direction") {
+	    if (settingName == "direction") {
                 if (!_.isUndefined(pointer) && isFinite(newValue)) {
                     var direction = "r";
                     var oppositeCurrent = currentValue + 180;
-		    newValue=Number(newValue);
+		    newValue=Math.trunc(newValue);
+                    if (oppositeCurrent < newValue) direction="1";
+		    if (currentsettings.labels) newValue+=50;
 
-                    if (oppositeCurrent < newValue) {
-                        direction = "l";
-                    }
-
-		    if (currentsettings.labels) {
-			    pointer.show();
-			    newValue+=50;
-		    }
-		    pointer.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
-                }
-
-                currentValue = Number(newValue);
+		    if (newValue!=currentValue)
+			    pointer.animate({transform: direction + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
+		    currentValue = newValue;
+		}
             }
             else if (settingName == "value_text") {
-				if (isFinite(newValue)) {
-					let f=parseFloat(newValue);
-					let d=countDecimals(newValue);
-					if (d>1) d=1;
-					valueDiv.html(f.toFixed(d));
-				} else {
-					valueDiv.html(newValue);
-				}
+		if (isFinite(newValue)) {
+		    let f=parseFloat(newValue);
+		    if (!_.isUndefined(currentsettings.decimalplaces) && currentsettings.decimalplaces!="")
+		    {
+			valueDiv.html(f.toFixed(currentsettings.decimalplaces));
+		    }
+		    else
+		    {
+		 	valueDiv.html(newValue);
+		    }
+		} else {
+		   valueDiv.html(newValue);
+		}
             }
         }
 
@@ -1314,6 +1309,12 @@
                 display_name: "Value Text",
                 type: "calculated"
             },
+	    {
+		name: "decimalplaces",
+		display_name: "Decimal Places",
+		type: "number",
+		description: "if value is numeric, format it with this parameter"
+	    },
             {
                 name: "units",
                 display_name: "Units",

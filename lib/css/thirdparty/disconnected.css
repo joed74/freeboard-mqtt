@@ -1,0 +1,7 @@
+.disconnected {
+   background-image: url('../../../img/plug-disconnected.png');
+   background-size: 24px;
+   background-repeat: no-repeat;
+   background-position-x: 95%;
+}
+
