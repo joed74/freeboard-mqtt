@@ -1253,14 +1253,13 @@
         this.onCalculatedValueChanged = function (settingName, newValue) {
 	    if (settingName == "direction") {
                 if (!_.isUndefined(pointer) && isFinite(newValue)) {
-                    var direction = "r";
-                    var oppositeCurrent = currentValue + 180;
 		    newValue=Math.trunc(newValue);
-                    if (oppositeCurrent < newValue) direction="1";
 		    if (currentsettings.labels) newValue+=50;
 		    if (newValue!==currentValue)
-			    pointer.animate({transform: direction + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce");
-		    currentValue = newValue;
+			   pointer.animate({transform: "r" + newValue + "," + (width / 2) + "," + (height / 2)}, 250, "bounce", function() 
+			   {
+			       if (this._.deg===newValue) currentValue = newValue;
+			   });
 		}
             }
             else if (settingName == "value_text") {
