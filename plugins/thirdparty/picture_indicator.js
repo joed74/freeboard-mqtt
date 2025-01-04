@@ -68,7 +68,7 @@
 	       {
 	            let img=$(picElement).find("img").first();
 		    if (img) img.attr("src","img/extra/"+obj.picture+".svg");
-                    stateElement.text(obj.text);		 
+                    stateElement.text(obj.text);
 	       }
 	    }
 	}
@@ -91,7 +91,7 @@
             if (settingName == "time") {
 		let dv=new Date(newValue);
                 if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-                let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(dv);
+                let dd=freeboard.dateDiff(new Date(),dv);
 		if (dd>0)
                 {
                    timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());

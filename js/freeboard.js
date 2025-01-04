@@ -3156,6 +3156,10 @@ var freeboard = (function()
 		dayOfYear: function(date)
 		{
 		    return (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
+		},
+		dateDiff: function(first, second)
+		{
+		    return Math.abs(Math.round((second - first) / (1000 * 60 * 60 * 24)));
 		}
 	};
 }());

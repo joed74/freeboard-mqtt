@@ -1,4 +1,4 @@
-// ┌────────────────────────────────────────────────────────────────────┐ \\
+/// ┌────────────────────────────────────────────────────────────────────┐ \\
 // │ F R E E B O A R D                                                  │ \\
 // ├────────────────────────────────────────────────────────────────────┤ \\
 // │ Copyright © 2013 Jim Heising (https://github.com/jheising)         │ \\
@@ -203,7 +203,7 @@
 		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
 		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
 	}
-	 
+
 
 		function updateValueSizing()
 		{
@@ -352,18 +352,18 @@
 		    if (!(typeof newValue === 'string' || newValue instanceof String)) return;
 		}
 
-                if (currentSettings.animate) 
+                if (currentSettings.animate)
 		{
                     easeTransitionText(newValue, valueElement, 500);
 		    if (newValue2) easeTransitionText(newValue2, value2Element, 500);
                 }
-                else 
+                else
 		{
 	    	    valueElement.text(newValue);
 		    if (newValue2) value2Element.text(newValue2);
                 }
 
-                if (currentSettings.sparkline) 
+                if (currentSettings.sparkline)
 		{
 		    value = newValue;
 		    if (currentSettings.updaterate=="onchange") updateSparkline();
@@ -372,7 +372,7 @@
             if (settingName == "time") {
 	        let dv=new Date(newValue);
 		if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-		let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(dv);
+		let dd=freeboard.dateDiff(new Date(),dv);
                 if (dd>0)
                 {
                    timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());
@@ -704,7 +704,7 @@
 		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
 		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
 	}
-	 
+ 
         this.render = function (element) {
             $(element).append(titleElement).append(sparklineElement).append(sparklineLegend);
         }
@@ -1148,7 +1148,7 @@
             if (settingName == "time") {
 		let dv=new Date(newValue);
                 if (isNaN(dv[Symbol.toPrimitive]('number'))) return;
-                let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(dv);
+		let dd=freeboard.dateDiff(new Date(),dv);
 		if (dd>0)
                 {
                    timeElement.text('('+dd+'d) '+dv.toLocaleTimeString());

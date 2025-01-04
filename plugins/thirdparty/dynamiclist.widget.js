@@ -95,7 +95,11 @@
                         case 'gate':
                             picname = "img/extra/fts_garage_door_40.svg";
                             break;
+			case 'vdr':
+			    picname = "img/extra/it_media_player.svg";
+			    break;
                         default:
+			    console.log("unknown type "+listObject[i].type);
                             picname = "";
                     }
                     var picElement = $('<div class="pic" style="width: 50px;height: 50px;float:left;margin-top:-5px;margin-right:10px;"><img src="' + picname + '" class="svg-convert" width="100%" height="100%" id="' + listObject[i].type + '"></div>');
@@ -103,7 +107,7 @@
                     var Text = $('<div class="indicator-text unselectable"  style="height: 26px; width: fit-content; font-size: large; color: #d3d4d4; font-weight: 100">' + listObject[i].display_name + '</div>');
 
                     const date = new Date(listObject[i].time);
-		    let dd=freeboard.dayOfYear(new Date())-freeboard.dayOfYear(date);
+		    let dd=freeboard.dateDiff(new Date(),date);
 		    let timestr;
 		    if (dd>0) 
 		    {
