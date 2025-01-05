@@ -3159,7 +3159,7 @@ var freeboard = (function()
 		},
 		dateDiff: function(first, second)
 		{
-		    return Math.abs(Math.round((second - first) / (1000 * 60 * 60 * 24)));
+		    return Math.abs(Math.trunc((second - first) / (1000 * 60 * 60 * 24)));
 		}
 	};
 }());
