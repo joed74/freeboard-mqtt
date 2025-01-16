@@ -528,21 +528,21 @@
 	var sparklineElement = $('<div class="tw-sparkline tw-td"></div>');
 	if (_.isUndefined(currentSettings.updaterate)) currentSettings.updaterate="onchange";
 
-	updateSparkline = function() {
+	this.updateSparkline = function() {
 	   //if (!Array.isArray(value)) return;
 	   //if (value.some(isNaN)) return;
 	   addValueToSparkline(sparklineElement, value);
 	}
 
-	updateInterval = function(rate) {
+	this.updateInterval = function(rate) {
 		if (intervalID) {
 			clearInterval(intervalID);
 			intervalID=null;
 		}
-		if (currentSettings.updaterate=="1s") intervalID=setInterval(updateSparkline, 1000);
-		if (currentSettings.updaterate=="10s") intervalID=setInterval(updateSparkline, 10000);
-		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
-		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
+		if (currentSettings.updaterate=="1s") intervalID=setInterval(self.updateSparkline, 1000);
+		if (currentSettings.updaterate=="10s") intervalID=setInterval(self.updateSparkline, 10000);
+		if (currentSettings.updaterate=="30s") intervalID=setInterval(self.updateSparkline, 30000);
+		if (currentSettings.updaterate=="1m") intervalID=setInterval(self.updateSparkline, 60000);
 	}
 
 
@@ -582,14 +582,14 @@
 			if(newSettings.sparkline)
 			{
 				sparklineElement.attr("style", null);
-				updateInterval(newSettings.updaterate);
+				self.updateInterval(newSettings.updaterate);
 			}
 			else
 			{
 				delete sparklineElement.data().values;
 				sparklineElement.empty();
 				sparklineElement.hide();
-				updateInterval("onchange");
+				self.updateInterval("onchange");
 			}
 
 			if(shouldDisplayTitle)
@@ -707,7 +707,7 @@
                 if (currentSettings.sparkline)
 		{
 		    value = newValue;
-		    if (currentSettings.updaterate=="onchange") updateSparkline();
+		    if (currentSettings.updaterate=="onchange") self.updateSparkline();
                 }
             }
             if (settingName == "time") {
@@ -1025,7 +1025,7 @@
 	var currentSettings = settings;
 	if (_.isUndefined(currentSettings.updaterate)) currentSettings.updaterate="onchange";
 
-	updateSparkline = function() {
+	this.updateSparkline = function() {
 	   if (!Array.isArray(value)) return;
 	   if (value.some(isNaN)) return;
 	   if (currentSettings.legend) {
@@ -1035,15 +1035,15 @@
 	   }
 	}
 
-	updateInterval = function(rate) {
+	this.updateInterval = function(rate) {
 		if (intervalID) {
 			clearInterval(intervalID);
 			intervalID=null;
 		}
-		if (currentSettings.updaterate=="1s") intervalID=setInterval(updateSparkline, 1000);
-		if (currentSettings.updaterate=="10s") intervalID=setInterval(updateSparkline, 10000);
-		if (currentSettings.updaterate=="30s") intervalID=setInterval(updateSparkline, 30000);
-		if (currentSettings.updaterate=="1m") intervalID=setInterval(updateSparkline, 60000);
+		if (currentSettings.updaterate=="1s") intervalID=setInterval(self.updateSparkline, 1000);
+		if (currentSettings.updaterate=="10s") intervalID=setInterval(self.updateSparkline, 10000);
+		if (currentSettings.updaterate=="30s") intervalID=setInterval(self.updateSparkline, 30000);
+		if (currentSettings.updaterate=="1m") intervalID=setInterval(self.updateSparkline, 60000);
 	}
  
         this.render = function (element) {
@@ -1057,12 +1057,12 @@
 			if(newSettings.include_legend) {
 				addSparklineLegend(sparklineLegend,  newSettings.legend.split(","));
 			}
-			updateInterval(newSettings.updaterate);
+			self.updateInterval(newSettings.updaterate);
         }
 
         this.onCalculatedValueChanged = function (settingName, newValue) {
 		value=newValue;
-		if (currentSettings.updaterate=="onchange") updateSparkline();
+		if (currentSettings.updaterate=="onchange") self.updateSparkline();
         }
 
         this.onDispose = function () {
