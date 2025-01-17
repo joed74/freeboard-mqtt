@@ -63,11 +63,6 @@ var slideShowWidget = function(settings)
 	}
     }
 
-    this.onDispose = function()
-    {
-        stopTimer();
-    }
-
     this.getHeight = function()
     {
         return 4;
