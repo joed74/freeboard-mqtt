@@ -17,10 +17,10 @@
                 "name"         : "server",
                 "display_name" : "MQTT Broker URI",
                 "type"         : "text",
-                "description"  : "Must be in the following format: ws[s]://hostname:port/[path] - e.g. ws://localhost:3320/<br>%HOST% can be used as replacement for hostname:port - e.g. ws://%HOST%/mydest<br>%WS% can be used as automatic transport security chooser - e.g. %WS%//%HOST%/mydest",
+                "description"  : "Must be in the following format: ws[s]://hostname:port/[path] - e.g. ws://localhost:3320/<br>%HOST% can be used as replacement for hostname:port - e.g. ws://%HOST%/mydest<br>%WS% can be used as automatic transport security chooser - e.g. %WS%://%HOST%/mydest",
                 "required"     : true,
 				"validator"	   : function(value) {
-					if (!value.match(/^(wss?):\/\/((\[(.+)\])|([^\/]+?))(:(\d+))?(\/.*)$/)) return "incorrect format, please reread description";
+					if (!value.match(/^(wss?|%WS%):\/\/((\[(.+)\])|([^\/]+?))(:(\d+))?(\/.*)$/)) return "incorrect format, please reread description";
 					return("");
 				}
             },
@@ -86,7 +86,7 @@
 		try {
 			data['connected'] = false;
 			updateCallback(data);
-			let ws=location.protocol.replace("http","ws");
+			let ws=location.protocol.replace("http","ws").replace(":","");
 			let host=currentSettings.server.replace("%HOST%",location.host).replace("%WS%",ws);
 			client = new Paho.Client(host, clientid);
 			console.log( "Attempting connection to "+host );
