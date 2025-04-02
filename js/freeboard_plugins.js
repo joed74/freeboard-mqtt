@@ -3895,14 +3895,32 @@ $.extend(freeboard, jQuery.eventEmitter);
 	    }
 	    if (settingName == "enable") {
                 var widget = displayElement[0].parentElement;
-		                if (newValue===false || newValue===0 || newValue==="0") {
+	        if (newValue===false || newValue==="false" || newValue===0 || newValue==="0") {
                         widget.style.pointerEvents="none";
                         widget.classList.add("disconnected");
+			widget.classList.remove("inactive");
                 }
                 else {
-                        widget.style.pointerEvents="inherit";
                         widget.classList.remove("disconnected");
+			if (currentSettings.active===false || currentSettings.active==="false" ||
+				currentSettings.active===0 || currentSettings.active==="0") {
+				widget.classList.add("inactive");
+			} else {
+				wdiget.style.pointerEvents="inherit";
+			}
                 }
+	    }
+	    if (settingName == "active") {
+		var widget = displayElement[0].parentElement;
+		if (newValue===false || newValue==="false" || newValue===0 || newValue==="0") {
+			widget.style.pointerEvents="none";
+			widget.classList.add("inactive");
+		}
+		else
+		{
+			widget.style.pointerEvents="inherit";
+			widget.classList.remove("inactive");
+		}
 	    }
 	}
 
@@ -3991,6 +4009,13 @@ $.extend(freeboard, jQuery.eventEmitter);
 		display_name: "Decimal Places",
 		type: "number",
 		description: "if value is numeric, format it with this parameter"
+	    },
+	    {
+		name: "active",
+		display_name: "Active",
+		type: "calculated",
+		default_value: true,
+		description: "Shows inactive alert icon when set to 'false' or '0'"
 	    },
 	    {
                 name: "sparkline",
