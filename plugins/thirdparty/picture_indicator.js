@@ -67,7 +67,16 @@
 	       if (obj)
 	       {
 	            let img=$(picElement).find("img").first();
-		    if (img) img.attr("src","img/extra/"+obj.picture+".svg");
+		    if (img)
+		    {
+			img.attr("src","img/extra/"+obj.picture+".svg");
+			if (titleElement.html().length>0)
+			{
+			     img.attr("width","90%");
+			     img.attr("height","90%");
+			     img.attr("style","margin-left: -4px");
+			}
+		    }
                     stateElement.text(obj.text);
 	       }
 	    }

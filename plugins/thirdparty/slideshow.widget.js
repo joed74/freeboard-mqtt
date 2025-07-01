@@ -13,7 +13,7 @@ var slideShowWidget = function(settings)
 
     this.updateImage = function(pic)
     {
-        if(widgetElement && imagePath && pic)
+        if(widgetElement && imagePath && (typeof pic !== 'undefined'))
         {
          	var cacheBreakerURL = imagePath + '/' + allpics[pic].text + (imagePath.indexOf("?") == -1 ? "?" : "&") + Date.now(), img = new Image();
 		img.onload = function() {
