@@ -3906,7 +3906,7 @@ $.extend(freeboard, jQuery.eventEmitter);
 				currentSettings.active===0 || currentSettings.active==="0") {
 				widget.classList.add("inactive");
 			} else {
-				wdiget.style.pointerEvents="inherit";
+				widget.style.pointerEvents="inherit";
 			}
                 }
 	    }
