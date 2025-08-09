@@ -27,12 +27,19 @@
 				"description": "Text on the right side of the last button"
             },
             {
-		"name"        : "caption",
-		"display_name": "Button Left Caption",
-		"type"        : "text",
+		"name"         : "caption",
+		"display_name" : "Button Left Caption",
+		"type"         : "text",
 		"default_value": "Push me",
-		"description": "Text on button, button is hidden if text is empty"
+		"description"  : "Text on button, button is hidden if text is empty"
             },
+	    {
+	        "name"         : "enable",
+		"display_name" : "Button Enable",
+		"type"         : "calculated",
+		"default_value": "true",
+		"description"  : "Enable/Disable button, default enabled"
+	    },
 	    {
                 "name"        : "color",
                 "display_name": "Button Left Color",
@@ -81,6 +88,13 @@
 		"description": "Text on button, button is hidden if text is empty"
             },
 	    {
+	        "name"         : "enable2",
+		"display_name" : "Button Enable",
+		"type"         : "calculated",
+		"default_value": "true",
+		"description"  : "Enable/Disable button, default enabled"
+	    },
+	    {
                 "name"        : "color2",
                 "display_name": "Button Middle Color",
                 "type"        : "option",
@@ -127,6 +141,13 @@
 		"type"        : "text",
 		"description": "Text on button, button is hidden if text is empty"
             },
+	    {
+	        "name"         : "enable3",
+		"display_name" : "Button Enable",
+		"type"         : "calculated",
+		"default_value": "true",
+		"description"  : "Enable/Disable button, default enabled"
+	    },
 	    {
                 "name"        : "color3",
                 "display_name": "Button Right Color",
@@ -239,24 +260,38 @@
 	var textElement = $("<div style=\"display: table-cell; white-space: break-spaces; vertical-align: middle; height: 35px; font-size: 95%\">"+(settings.text?settings.text:"")+"</div>");
         $(buttonElement3).click(self.onClick3.bind(self));
 
-        function updateButton(element, caption, color) {
-			if (caption) element[0].value=caption;
-            if (bcolor[color]) {
-                element.css({
-                    "color" : bcolor[color][0],
-                    "background-color" : bcolor[color][1]
-                });
-            } else {
-                element.css({
-                    "color" : bcolor["red"][0],
-                    "background-color" : bcolor["red"][1]
-                });
-			}
+        function updateButton(element, caption, color, enable) {
+		if (caption) element[0].value=caption;
+		if (enable) {
+		    if (enable===true || enable[0]==='1' || enable[0]==='t') {
+		       element.prop('disabled',false);
+                    } else {
+	               element.prop('disabled',true);
+	               element.css({
+		         "color" : "#666",
+		         "background-color" : "#333"
+		       });
+		       return;
+		    }
+		}
+	        if (color) {
+                   if (bcolor[color]) {
+                         element.css({
+                            "color" : bcolor[color][0],
+                            "background-color" : bcolor[color][1]
+                         });
+                   } else {
+                         element.css({
+                            "color" : bcolor["red"][0],
+                            "background-color" : bcolor["red"][1]
+                         });
+                   }
+                }
         }
 
-        updateButton(buttonElement, settings.caption, settings.color);
-	    updateButton(buttonElement2, settings.caption2, settings.color2);
-	    updateButton(buttonElement3, settings.caption3, settings.color3);
+        updateButton(buttonElement, settings.caption, settings.color, settings.enable);
+	    updateButton(buttonElement2, settings.caption2, settings.color2, settings.enable2);
+	    updateButton(buttonElement3, settings.caption3, settings.color3, settings.enable3);
 
         self.render = function(containerElement) {
 			myelement = containerElement;
@@ -305,26 +340,20 @@
 
         self.onSettingsChanged = function(newSettings) {
             currentSettings = newSettings;
-			$(buttonElement)[0].value=(newSettings.caption?newSettings.caption:"");
-			$(buttonElement2)[0].value=(newSettings.caption2?newSettings.caption2:"");
-			$(buttonElement3)[0].value=(newSettings.caption3?newSettings.caption3:"");
-            updateButton(buttonElement, newSettings.caption, newSettings.color);
-            updateButton(buttonElement2, newSettings.caption2, newSettings.color2);
-            updateButton(buttonElement3, newSettings.caption3, newSettings.color3);
+            updateButton(buttonElement, newSettings.caption, newSettings.color, newSettings.enable);
+            updateButton(buttonElement2, newSettings.caption2, newSettings.color2, newSettings.enable2);
+            updateButton(buttonElement3, newSettings.caption3, newSettings.color3, newSettings.enable3);
 	        textElement.text(newSettings.text?newSettings.text:"");
 			if (myelement) self.render(myelement);
 	}
 
         self.onCalculatedValueChanged = function(settingName, newValue) {
-            if(settingName == "caption") {
-                $(buttonElement).val(newValue);
-            }
-            if(settingName == "caption2") {
-		$(buttonElement2).val(newValue);
-	    }
-	    if(settingName == "caption3") {
-		$(buttonElement3).val(newValue);
-	    }
+            if(settingName == "caption") updateButton(buttonElement, newValue, null, null);
+            if(settingName == "caption2") updateButton(buttonElement2, newValue, null, null);
+	    if(settingName == "caption3") updateButton(buttonElement3, newValue, null, null);
+	    if (settingName == "enable") updateButton(buttonElement, null, currentSettings.color, newValue);
+	    if (settingName == "enable2") updateButton(buttonElement2, null, currentSettings.color2, newValue);
+	    if (settingName == "enable3") updateButton(buttonElement3, null, currentSettings.color3, newValue);
 	}
 
         self.onDispose = function() {

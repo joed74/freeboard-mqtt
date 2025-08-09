@@ -1,10 +1,24 @@
 .netpie-button {
     height: 36px;
     width: 50%;
-    display: inline-block;
+    display: block;
     box-shadow: 0px 1px 0px 1px #111111;
     border-radius: 4px;
     border-color: #eee;
+    text-decoration: none;
+    text-align: center;
+    outline: none;
+    font-size: 115%;
+    float: left;
+}
+
+.netpie-button:disabled {
+    height: 36px;
+    width: 50%;
+    display: block;
+    box-shadow: 0px 0px 0px 0px #111111;
+    border-radius: 4px;
+    border-color: #757575;
     text-decoration: none;
     text-align: center;
     outline: none;
