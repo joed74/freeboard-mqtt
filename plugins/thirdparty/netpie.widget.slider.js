@@ -102,6 +102,13 @@ if (typeof globalStore === "undefined") {
                 "display_name"  : "Enable",
 		"type"          : "calculated",
 		"default_value" : true,
+		"description"   : "Shows disconnect icon if set to 'false' or '0'"
+	    },
+	    {
+		"name"          : "operation",
+		"display_name"  : "Operation enabled",
+		"type"          : "calculated",
+		"default_value" : true,
 		"description"   : "Disables widget if set to 'false' or '0'"
 	    },
 	    {
@@ -303,6 +310,18 @@ if (typeof globalStore === "undefined") {
 			widget.style.pointerEvents="inherit";
 			widget.classList.remove("disconnected");
 		}
+	    }
+	    if (settingName === "operation") {
+	       var widget = sliderObject[self.widgetID].element.parentElement;
+	       if (newValue===false || newValue===0 || newValue==="0") {
+		        sliderObject[self.widgetID].element.disabled=true;
+                        widget.style.pointerEvents="none";
+                }
+                else {
+                        widget.style.pointerEvents="inherit";
+			 sliderObject[self.widgetID].element.disabled=false;
+                }
+		   sliderObject[self.widgetID].update();
 	    }
         }
 
